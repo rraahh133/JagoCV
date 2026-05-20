@@ -2,7 +2,7 @@ import { Globe, Mail, MapPin, Phone } from "lucide-react";
 import { ResumeData } from '../../types/resume.types';
 
 export const metadata = {
-  name: 'Layout Modern Dua Kolom',
+  name: 'Layout Modern Dua Kolom 2',
   desc: 'Bersih, profesional, dan efisien dengan pembagian kolom info pribadi & portofolio.'
 };
 
@@ -34,12 +34,22 @@ export default function ModernDuaKolom({ data }: Props) {
   } as React.CSSProperties;
 
   return (
-    <div style={themeStyle} className="min-h-screen bg-slate-200 py-10 flex justify-center items-start overflow-auto">
-      {/* Container A4 Page */}
-      <div style={{ '--color-primary': theme.sidebarBg, '--color-primary-text': theme.sidebarText, '--color-accent': theme.accent, '--color-badge-bg': entityStyle.badgeBgColor || '#E0E7FF', '--color-badge-text': entityStyle.badgeTextColor || '#4F46E5', '--badge-radius': entityStyle.badgeBorderRadius || '4px', boxSizing: "border-box" } as React.CSSProperties} className="w-[210mm] min-h-[297mm] bg-white shadow-2xl flex flex-row overflow-hidden text-sm transform origin-top md:scale-100 scale-75"
+    <div style={themeStyle} className="w-full">
+      {/* Container A4 Page — no overflow-hidden so content can flow to page 2+ */}
+      <div
+        style={{
+          '--color-primary': theme.sidebarBg,
+          '--color-primary-text': theme.sidebarText,
+          '--color-accent': theme.accent,
+          '--color-badge-bg': entityStyle.badgeBgColor || '#E0E7FF',
+          '--color-badge-text': entityStyle.badgeTextColor || '#4F46E5',
+          '--badge-radius': entityStyle.badgeBorderRadius || '4px',
+          boxSizing: "border-box",
+        } as React.CSSProperties}
+        className="w-[210mm] min-h-[297mm] bg-white shadow-2xl flex flex-row print:shadow-none text-sm mx-auto"
       >
-        {/* Konten Kiri (Sidebar) */}
-        <aside className="w-1/3 bg-[var(--color-sidebar)] text-[var(--color-sidebar-text)] p-8 flex flex-col gap-8">
+        {/* Konten Kiri (Sidebar) — stretches to match right column height */}
+        <aside className="w-1/3 bg-[var(--color-sidebar)] text-[var(--color-sidebar-text)] p-8 flex flex-col gap-8 self-stretch">
           {/* Header Profile */}
           <div className="flex flex-col items-center gap-4">
             <div className="w-32 h-32 rounded-full border-4 border-white overflow-hidden shadow-lg transform rotate-3">
@@ -135,7 +145,7 @@ export default function ModernDuaKolom({ data }: Props) {
         <main className="w-2/3 bg-white text-slate-800 p-8 flex flex-col gap-8">
           {/* Pengalaman */}
           {data.experience && data.experience.length > 0 && (
-            <section className="flex flex-col gap-4">
+            <section className="flex flex-col gap-4 page-break-avoid">
               <div className="flex items-center gap-2 border-b-2 border-slate-100 pb-2">
                 <h3 className="text-2xl font-bold text-slate-900 tracking-tight">
                   Pengalaman Kerja
@@ -143,7 +153,7 @@ export default function ModernDuaKolom({ data }: Props) {
               </div>
               <div className="flex flex-col gap-6 pl-2">
                 {data.experience.map((exp, idx) => (
-                  <div key={idx} className="relative pl-6">
+                  <div key={idx} className="relative pl-6 page-break-avoid">
                     <span className="absolute top-1.5 left-0 w-2.5 h-2.5 bg-[var(--color-primary)] rounded-full ring-4 ring-primary-50"></span>
                     {idx !== data.experience.length - 1 && (
                       <span className="absolute top-4 left-1 w-0.5 h-[calc(100%+0.5rem)] bg-slate-200"></span>
@@ -174,7 +184,7 @@ export default function ModernDuaKolom({ data }: Props) {
 
           {/* Proyek Unggulan */}
           {data.projects && data.projects.length > 0 && (
-            <section className="flex flex-col gap-4">
+            <section className="flex flex-col gap-4 page-break-avoid">
               <div className="flex flex-col border-b-2 border-slate-100 pb-2">
                 <h3 className="text-2xl font-bold text-slate-900 tracking-tight">
                   Proyek Unggulan
@@ -224,7 +234,7 @@ export default function ModernDuaKolom({ data }: Props) {
 
           {/* Pendidikan */}
           {data.education && data.education.length > 0 && (
-            <section className="flex flex-col gap-4">
+            <section className="flex flex-col gap-4 page-break-avoid">
               <div className="flex flex-col border-b-2 border-slate-100 pb-2">
                 <h3 className="text-2xl font-bold text-slate-900 tracking-tight">
                   Pendidikan
@@ -232,7 +242,7 @@ export default function ModernDuaKolom({ data }: Props) {
               </div>
               <div className="flex flex-col gap-4">
                 {data.education.map((edu, idx) => (
-                  <div key={idx} className="flex justify-between items-start">
+                  <div key={idx} className="flex justify-between items-start page-break-avoid">
                     <div className="flex flex-col">
                       <h3 className="font-bold text-slate-900 text-base">
                         {edu.degree}

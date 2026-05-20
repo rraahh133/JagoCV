@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'motion/react';
 import { ResumeData } from '../../types/resume.types';
 
 export const metadata = {
@@ -69,16 +68,14 @@ export default function CorporateElegan({ data }: Props) {
   };
 
   return (
-    <div className="min-h-screen w-full bg-slate-200 py-10 overflow-x-auto flex justify-center items-start selection:bg-primary-200 selection:text-[var(--color-accent)]">
+    <div className="w-full selection:bg-primary-200 selection:text-[var(--color-accent)]">
       
-      {/* A4 Document Container */}
-      <div style={{ '--color-primary': theme.sidebarBg, '--color-primary-text': theme.sidebarText, '--color-accent': theme.accent, '--color-badge-bg': entityStyle.badgeBgColor || '#E0E7FF', '--color-badge-text': entityStyle.badgeTextColor || '#4F46E5', '--badge-radius': entityStyle.badgeBorderRadius || '4px' } as React.CSSProperties} className="w-[210mm] min-h-[297mm] flex flex-row shrink-0 bg-white shadow-2xl  text-slate-900 print:shadow-none print:w-[210mm] print:min-h-[297mm] print:m-0 print:py-0 overflow-hidden transform origin-top md:scale-100 scale-75">
+      {/* A4 Document Container — no overflow-hidden so content can flow to page 2+ */}
+      <div style={{ '--color-primary': theme.sidebarBg, '--color-primary-text': theme.sidebarText, '--color-accent': theme.accent, '--color-badge-bg': entityStyle.badgeBgColor || '#E0E7FF', '--color-badge-text': entityStyle.badgeTextColor || '#4F46E5', '--badge-radius': entityStyle.badgeBorderRadius || '4px' } as React.CSSProperties} className="w-[210mm] min-h-[297mm] flex flex-row shrink-0 bg-white shadow-2xl text-slate-900 print:shadow-none print:w-[210mm] print:min-h-[297mm] print:m-0 print:py-0 mx-auto">
         
-        {/* LEFT SIDEBAR: PROFILE */}
-        <motion.aside 
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="w-[33%] bg-[var(--color-primary)] p-6 sm:p-8 text-[var(--color-primary-text)] flex flex-col shrink-0"
+        {/* LEFT SIDEBAR: PROFILE — stretches to match right column height */}
+        <aside
+          className="w-[33%] bg-[var(--color-primary)] p-6 sm:p-8 text-[var(--color-primary-text)] flex flex-col shrink-0 self-stretch"
         >
         <div className="flex flex-col h-full">
           <div>
@@ -184,10 +181,10 @@ export default function CorporateElegan({ data }: Props) {
             </div>
           </div>
         </div>
-      </motion.aside>
+      </aside>
 
       {/* RIGHT CONTENT */}
-      <main className="flex-1 p-6 sm:p-8 flex flex-col bg-white overflow-hidden">
+      <main className="flex-1 p-6 sm:p-8 flex flex-col bg-white">
         <div className="w-full">
           
           <div className="flex flex-col gap-10">
@@ -197,7 +194,7 @@ export default function CorporateElegan({ data }: Props) {
               
               <div className="space-y-8">
                 {experiences.map((exp, idx) => (
-                    <div key={idx} className="flex gap-4 group">
+                    <div key={idx} className="flex gap-4 group page-break-avoid">
                       <div className="w-1 bg-[var(--color-accent)] shrink-0"></div>
                       <div className="flex-1">
                         <div className="flex flex-col xl:flex-row xl:justify-between xl:items-start gap-1 xl:gap-4 mb-2">
@@ -221,7 +218,7 @@ export default function CorporateElegan({ data }: Props) {
               </div>
 
             {/* PROJECTS & EDUCATION */}
-            <div className="w-full grid grid-cols-2 gap-6 shrink-0">
+            <div className="w-full grid grid-cols-2 gap-6 shrink-0 page-break-avoid">
               
               {/* FEATURED PROJECTS */}
               <section>

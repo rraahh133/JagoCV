@@ -86,7 +86,7 @@ export default function ResumeResultView() {
                   fontFamily: doc.fontFamily || 'Inter' 
                 }}
               >
-                <ResumeViewer templateId={doc.templateId || 'a4-react-resume'} data={doc.content} />
+                <ResumeViewer templateId={doc.templateId || 'a4-react-resume'} data={doc.content} fontFamily={doc.fontFamily || 'Inter'} />
               </div>
             </div>
           </div>

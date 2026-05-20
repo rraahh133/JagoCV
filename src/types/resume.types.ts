@@ -48,6 +48,10 @@ export interface ResumeData {
       sidebarBg: string;
       sidebarText: string;
       accent: string;
+      hrColor?: string;
+      sectionOutline?: string;
+      contentText?: string;
+      contentBg?: string;
     };
   };
 }

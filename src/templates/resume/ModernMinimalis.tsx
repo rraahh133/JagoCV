@@ -81,20 +81,48 @@ export default function ModernMinimalis({ data }: Props) {
     borderRadius: entityStyle.hasBadge ? (entityStyle.badgeBorderRadius || '4px') : '0',
   };
 
-  const theme = data.design?.theme || { sidebarBg: '#1e3a8a', sidebarText: '#f8fafc', accent: '#4f46e5' };
+  const theme = data.design?.theme || { 
+    sidebarBg: '#1e3a8a', 
+    sidebarText: '#f8fafc', 
+    accent: '#4f46e5',
+    hrColor: '#E5E7EB',
+    sectionOutline: '#E0E7FF',
+    contentText: '#1E293B',
+    contentBg: '#FFFFFF'
+  };
   const themeStyle = {
     '--color-sidebar': theme.sidebarBg,
     '--color-sidebar-text': theme.sidebarText,
-    '--color-accent': theme.accent, '--color-badge-bg': entityStyle.badgeBgColor || '#E0E7FF', '--color-badge-text': entityStyle.badgeTextColor || '#4F46E5', '--badge-radius': entityStyle.badgeBorderRadius || '4px',
+    '--color-accent': theme.accent,
+    '--color-hr': theme.hrColor || '#E5E7EB',
+    '--color-section-outline': theme.sectionOutline || '#E0E7FF',
+    '--color-content-text': theme.contentText || '#1E293B',
+    '--color-content-bg': theme.contentBg || '#FFFFFF',
+    '--color-badge-bg': entityStyle.badgeBgColor || '#E0E7FF', 
+    '--color-badge-text': entityStyle.badgeTextColor || '#4F46E5', 
+    '--badge-radius': entityStyle.badgeBorderRadius || '4px',
   } as React.CSSProperties;
 
   return (
-    <div style={themeStyle} className="bg-slate-200 flex items-center justify-center py-10 px-4 print:p-0 print:bg-white w-full h-full overflow-auto hide-scrollbar">
-      {/* A4 Canvas */}
-      <div style={{ '--color-primary': theme.sidebarBg, '--color-primary-text': theme.sidebarText, '--color-accent': theme.accent, '--color-badge-bg': entityStyle.badgeBgColor || '#E0E7FF', '--color-badge-text': entityStyle.badgeTextColor || '#4F46E5', '--badge-radius': entityStyle.badgeBorderRadius || '4px' } as React.CSSProperties} className="w-[210mm] min-h-[297mm] bg-white shadow-2xl flex shrink-0 overflow-hidden print:shadow-none mx-auto relative transform origin-top md:scale-100 scale-75">
-        
-        {/* Left Sidebar */}
-        <div className="w-[33%] bg-[var(--color-sidebar)] text-[var(--color-sidebar-text)] p-6 flex flex-col gap-6 shrink-0 overflow-hidden">
+    <div style={themeStyle} className="w-full">
+      {/* A4 Canvas — no overflow-hidden so content can flow to page 2+ */}
+      <div
+        style={{
+          '--color-primary': theme.sidebarBg,
+          '--color-primary-text': theme.sidebarText,
+          '--color-accent': theme.accent,
+          '--color-hr': theme.hrColor || '#E5E7EB',
+          '--color-section-outline': theme.sectionOutline || '#E0E7FF',
+          '--color-content-text': theme.contentText || '#1E293B',
+          '--color-content-bg': theme.contentBg || '#FFFFFF',
+          '--color-badge-bg': entityStyle.badgeBgColor || '#E0E7FF',
+          '--color-badge-text': entityStyle.badgeTextColor || '#4F46E5',
+          '--badge-radius': entityStyle.badgeBorderRadius || '4px',
+        } as React.CSSProperties}
+        className="w-[210mm] min-h-[297mm] bg-white shadow-2xl flex shrink-0 print:shadow-none mx-auto relative"
+      >
+        {/* Left Sidebar — stretches to match right column height */}
+        <div className="w-[33%] bg-[var(--color-sidebar)] text-[var(--color-sidebar-text)] p-6 flex flex-col gap-6 shrink-0 self-stretch">
           
           <div className="relative self-center mt-2 flex flex-col items-center">
             <div className="w-28 h-28 bg-slate-300 border-4 border-white rotate-3 shadow-lg flex items-center justify-center overflow-hidden mb-4">
@@ -188,16 +216,16 @@ export default function ModernMinimalis({ data }: Props) {
         </div>
 
         {/* Right Content */}
-        <div className="w-[67%] bg-white p-8 flex flex-col gap-6 shrink-0 overflow-hidden text-slate-800">
+        <div className="w-[67%] p-8 flex flex-col gap-6 shrink-0" style={{ backgroundColor: 'var(--color-content-bg)', color: 'var(--color-content-text)' }}>
           
           {/* Experience */}
-          <div className="space-y-4">
+          <div className="space-y-4 page-break-avoid">
             <h2 className="text-[15px] font-black text-indigo-950 uppercase tracking-tighter flex items-center gap-2">
               <span className="w-5 h-1 bg-[var(--color-primary)]"></span> Pengalaman
             </h2>
             <div className={`space-y-5 ${isExpPlaceholder ? "opacity-50 italic" : ""}`}>
               {experiences.map((exp, idx) => (
-                <div key={idx} className="relative pl-5 border-l border-indigo-100 space-y-1">
+                <div key={idx} className="relative pl-5 space-y-1 page-break-avoid" style={{ borderLeft: `1px solid var(--color-hr)` }}>
                   <div className="flex justify-between items-start gap-2">
                     <h4 className="text-sm font-bold text-slate-900 leading-snug">
                       {exp.title} &mdash; <span className="inline-block text-slate-600" style={entityStyleCSS}>{exp.company}</span>
@@ -215,18 +243,16 @@ export default function ModernMinimalis({ data }: Props) {
           </div>
 
           {/* Featured Projects */}
-          <div className="space-y-4">
+          <div className="space-y-4 page-break-avoid">
             <h2 className="text-[15px] font-black text-indigo-950 uppercase tracking-tighter flex items-center gap-2">
               <span className="w-5 h-1 bg-[var(--color-primary)]"></span> Proyek Unggulan
             </h2>
             <div className={`grid grid-cols-2 gap-4 ${isProjPlaceholder ? "opacity-50 italic" : ""}`}>
               {projects.map((proj, idx) => {
                 const isAmber = idx % 2 !== 0;
-                const borderClass = isAmber ? "border-indigo-300" : "border-indigo-300";
-                const bgClass = isAmber ? "bg-indigo-50/40" : "bg-slate-50/40";
-                const textTitle = isAmber ? "text-[var(--color-accent)]" : "text-[var(--color-accent)]";
-                const badgeBorder = isAmber ? "border-indigo-200" : "border-slate-200";
-                const badgeText = isAmber ? "text-[var(--color-accent)]" : "text-[var(--color-accent)]";
+                const borderClass = "border-[var(--color-section-outline)]";
+                const bgClass = "bg-[var(--color-section-outline)]/20";
+                const textTitle = "text-[var(--color-accent)]";
 
                 return (
                   <div key={idx} className={`p-4 border border-dashed rounded-sm space-y-2 flex flex-col ${borderClass} ${bgClass}`}>
@@ -253,13 +279,13 @@ export default function ModernMinimalis({ data }: Props) {
           </div>
 
           {/* Education */}
-          <div className="space-y-4">
+          <div className="space-y-4 page-break-avoid">
             <h2 className="text-[15px] font-black text-indigo-950 uppercase tracking-tighter flex items-center gap-2">
               <span className="w-5 h-1 bg-[var(--color-primary)]"></span> Pendidikan
             </h2>
             <div className={`space-y-3 ${isEduPlaceholder ? "opacity-50 italic" : ""}`}>
               {educations.map((edu, idx) => (
-                <div key={idx} className="flex justify-between items-center bg-slate-50 p-3 border-r-2 border-slate-200">
+                <div key={idx} className="flex justify-between items-center p-3 page-break-avoid" style={{ backgroundColor: 'var(--color-section-outline)', borderRight: `2px solid var(--color-hr)` }}>
                   <div className="space-y-0.5">
                     <h3 className="text-[13px] font-bold text-slate-900">{edu.degree}</h3>
                     <p className="text-[11px] text-slate-500 inline-block" style={entityStyleCSS}>{edu.campus}</p>

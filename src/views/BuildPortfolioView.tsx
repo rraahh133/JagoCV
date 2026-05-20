@@ -102,7 +102,7 @@ export default function BuildPortfolioView() {
   const [isSaving, setIsSaving] = useState(false);
   const [doc, setDoc] = useState<any>(null);
 
-  const [alert, setAlert] = useState<{ show: boolean; type: 'success' | 'error'; message: string }>({
+  const [notification, setNotification] = useState<{ show: boolean; type: 'success' | 'error'; message: string }>({
     show: false,
     type: 'success',
     message: ''
@@ -131,10 +131,10 @@ export default function BuildPortfolioView() {
       if (res) {
         setDoc(res);
       }
-      setAlert({ show: true, type: 'success', message: 'Progress berhasil disimpan!' });
+      setNotification({ show: true, type: 'success', message: 'Progress berhasil disimpan!' });
     } catch (err: any) {
       console.error(err);
-      setAlert({ show: true, type: 'error', message: err.message || 'Gagal menyimpan progress' });
+      setNotification({ show: true, type: 'error', message: err.message || 'Gagal menyimpan progress' });
     }
   };
 
@@ -150,13 +150,13 @@ export default function BuildPortfolioView() {
   }, [id, formData, selectedLayout, isAiMode, doc]);
 
   useEffect(() => {
-    if (alert.show) {
+    if (notification.show) {
       const timer = setTimeout(() => {
-        setAlert(prev => ({ ...prev, show: false }));
+        setNotification(prev => ({ ...prev, show: false }));
       }, 3000);
       return () => clearTimeout(timer);
     }
-  }, [alert.show]);
+  }, [notification.show]);
 
   useEffect(() => {
     if (id) {
@@ -234,7 +234,7 @@ export default function BuildPortfolioView() {
       }
     } catch (err: any) {
       console.error(err);
-      alert(err.message || 'Gagal menyimpan portofolio');
+      setNotification({ show: true, type: 'error', message: err.message || 'Gagal menyimpan portofolio' });
     } finally {
       setIsSaving(false);
     }
@@ -275,14 +275,14 @@ export default function BuildPortfolioView() {
             <p className="text-slate-500 dark:text-slate-400 text-sm max-w-2xl">Buat landing page portofolio yang indah dan responsif untuk menampilkan proyek, resume, dan media sosial Anda. Deploi langsung ke tautan singkat.</p>
           </div>
           <div className="flex items-center gap-3 shrink-0">
-            {alert.show && (
+            {notification.show && (
               <div className="animate-[fadeIn_0.3s_ease_forwards]">
                 <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border shadow-md backdrop-blur-md transition-all ${
-                  alert.type === 'success' 
+                  notification.type === 'success' 
                     ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400' 
                     : 'bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400'
                 }`}>
-                  {alert.type === 'success' ? (
+                  {notification.type === 'success' ? (
                     <svg className="w-4.5 h-4.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -291,7 +291,7 @@ export default function BuildPortfolioView() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   )}
-                  <span className="text-xs font-bold">{alert.message}</span>
+                  <span className="text-xs font-bold">{notification.message}</span>
                 </div>
               </div>
             )}
@@ -787,3 +787,4 @@ export default function BuildPortfolioView() {
       </div>
   );
 }
+

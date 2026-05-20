@@ -51,10 +51,24 @@ class ApiService {
 
     try {
       const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
-      const data = await response.json();
+
+      // Guard against non-JSON responses (e.g. HTML error pages from 413, 502, etc.)
+      const contentType = response.headers.get('content-type') || '';
+      let data: any;
+      if (contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        // Surface a meaningful error instead of a cryptic SyntaxError
+        throw new Error(
+          response.status === 413
+            ? 'Ukuran data terlalu besar. Coba kurangi ukuran gambar yang diunggah.'
+            : `Server error ${response.status}: ${text.slice(0, 200)}`
+        );
+      }
 
       if (!response.ok) {
-        throw new Error(data.error || 'Terjadi kesalahan');
+        throw new Error(data?.error || 'Terjadi kesalahan');
       }
 
       return data as T;

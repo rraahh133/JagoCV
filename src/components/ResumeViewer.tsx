@@ -57,10 +57,10 @@ export default function ResumeViewer({ templateId, data, fontFamily }: Props) {
 
   if (module && module.default) {
     const TemplateComponent = module.default;
-    const isCv = !!cvAtsTemplates[cvPath];
+    // Always activate A4Paginator — resume templates also need multi-page support
     return (
       <div style={{ fontFamily: fontFamily || 'Inter, sans-serif' }} className="w-full">
-        <A4Paginator active={isCv}>
+        <A4Paginator active={true}>
           <TemplateComponent data={cleanedData} />
         </A4Paginator>
       </div>
