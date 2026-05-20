@@ -8,28 +8,30 @@ datasource db {
 }
 
 model User {
-  id                 String           @id @default(uuid())
-  email              String           @unique
-  password           String
-  name               String
-  profileImageUrl    String?
-  subscriptionTier   SubscriptionTier @default(BIASA)
-  subscriptionEndsAt DateTime?
-  aiCredits          Int              @default(10)
-  portfolioViews     Int              @default(0)
-  deletedAt          DateTime?
-  createdAt          DateTime         @default(now())
-  updatedAt          DateTime         @updatedAt
-  bio                String?
-  headline           String?
-  location           String?
-  aiUsageLogs        AiUsageLog[]
-  chatMessages       ChatMessage[]
-  documents          Document[]
-  education          Education[]
-  experience         Experience[]
-  phones             UserPhone[]
-  socialLinks        UserSocial[]
+  id                    String           @id @default(uuid())
+  email                 String           @unique
+  password              String
+  name                  String
+  profileImageUrl       String?
+  subscriptionTier      SubscriptionTier @default(BIASA)
+  subscriptionEndsAt    DateTime?
+  aiCredits             Int              @default(10)
+  portfolioViews        Int              @default(0)
+  deletedAt             DateTime?
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+  bio                   String?
+  headline              String?
+  location              String?
+  passwordResetToken    String?
+  passwordResetExpires  DateTime?
+  aiUsageLogs           AiUsageLog[]
+  chatMessages          ChatMessage[]
+  documents             Document[]
+  education             Education[]
+  experience            Experience[]
+  phones                UserPhone[]
+  socialLinks           UserSocial[]
 
   @@index([email])
 }

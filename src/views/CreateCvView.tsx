@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { LayoutSelection } from './LayoutSelection';
 import { useWizard } from '../hooks/useWizard';
@@ -15,7 +15,7 @@ export default function CreateCvView() {
   const { user } = useAuth();
   const [isAiMode, setIsAiMode] = useState(false);
   const [aiStep, setAiStep] = useState(1);
-  const { currentStep, nextStep, prevStep } = useWizard(1, 5);
+  const { currentStep, nextStep, prevStep } = useWizard(1, 4);
   const [isSaving, setIsSaving] = useState(false);
   const [showLayoutSelection, setShowLayoutSelection] = useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = useState('AtsCompact');
@@ -131,19 +131,59 @@ export default function CreateCvView() {
     }
   }, [id]);
 
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 1024 * 1024 * 2) {
-        alert("File terlalu besar. Maksimal 2MB.");
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        updateField('photoUrl', reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    // Reset error state
+    setPhotoError(null);
+
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      setPhotoError('Format file tidak didukung. Gunakan JPG, PNG, atau WebP.');
+      e.target.value = ''; // Reset input
+      return;
     }
+
+    // Validate file size (2MB max)
+    const maxSize = 2 * 1024 * 1024; // 2MB in bytes
+    if (file.size > maxSize) {
+      setPhotoError(`File terlalu besar (${(file.size / 1024 / 1024).toFixed(2)}MB). Maksimal 2MB.`);
+      e.target.value = ''; // Reset input
+      return;
+    }
+
+    // Start upload
+    setPhotoUploading(true);
+    const reader = new FileReader();
+    
+    reader.onloadend = () => {
+      try {
+        const result = reader.result as string;
+        // Validate base64 result
+        if (!result || !result.startsWith('data:image')) {
+          throw new Error('Format gambar tidak valid');
+        }
+        updateField('photoUrl', result);
+        setPhotoUploading(false);
+        setPhotoError(null);
+      } catch (err) {
+        setPhotoError('Gagal memproses gambar. Silakan coba lagi.');
+        setPhotoUploading(false);
+      }
+    };
+
+    reader.onerror = () => {
+      setPhotoError('Gagal membaca file. Silakan coba lagi.');
+      setPhotoUploading(false);
+      e.target.value = ''; // Reset input
+    };
+
+    reader.readAsDataURL(file);
   };
 
   const updateField = (field: keyof CvFormData, value: any) => {
@@ -329,7 +369,7 @@ export default function CreateCvView() {
             <div id="cv-wizard-progress" className="w-full mb-8 pt-4">
               <div className="flex items-center justify-between relative">
                 <div className="absolute left-0 top-5 -translate-y-1/2 w-full h-1.5 bg-slate-100 dark:bg-[#1A2133] rounded-full z-0"></div>
-                <div id="cv-progress-bar" className={`absolute left-0 top-5 -translate-y-1/2 h-1.5 bg-[#1E5EFF] shadow-[0_0_10px_rgba(37,99,235,0.5)] rounded-full z-0 transition-all duration-700 ease-out`} style={{width: `${(currentStep - 1) * 25}%`}}></div>
+                <div id="cv-progress-bar" className={`absolute left-0 top-5 -translate-y-1/2 h-1.5 bg-[#1E5EFF] shadow-[0_0_10px_rgba(37,99,235,0.5)] rounded-full z-0 transition-all duration-700 ease-out`} style={{width: `${(currentStep - 1) * 33.33}%`}}></div>
                 
                 <div className={`relative z-10 flex flex-col items-center gap-2 group cv-step-indicator ${currentStep >= 1 ? 'active' : ''}`}>
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-500 ${currentStep >= 1 ? 'bg-[#1E5EFF] text-white shadow-[0_0_15px_rgba(37,99,235,0.4)] scale-110' : 'bg-white dark:bg-[#070B19] border-2 border-slate-200 dark:border-[#2A3143] text-slate-400'}`}>1</div>
@@ -345,11 +385,7 @@ export default function CreateCvView() {
                 </div>
                 <div className={`relative z-10 flex flex-col items-center gap-2 group cv-step-indicator ${currentStep >= 4 ? 'active' : ''}`}>
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-500 ${currentStep >= 4 ? 'bg-[#1E5EFF] text-white shadow-[0_0_15px_rgba(37,99,235,0.4)] scale-110' : 'bg-white dark:bg-[#070B19] border-2 border-slate-200 dark:border-[#2A3143] text-slate-400'}`}>4</div>
-                  <span className={`text-[11px] font-bold mt-1 transition-colors uppercase tracking-wider ${currentStep >= 4 ? 'text-[#1E5EFF] dark:text-blue-400' : 'text-slate-400 hidden sm:block'}`}>Keahlian</span>
-                </div>
-                <div className={`relative z-10 flex flex-col items-center gap-2 group cv-step-indicator ${currentStep >= 5 ? 'active' : ''}`}>
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-500 ${currentStep >= 5 ? 'bg-[#1E5EFF] text-white shadow-[0_0_15px_rgba(37,99,235,0.4)] scale-110' : 'bg-white dark:bg-[#070B19] border-2 border-slate-200 dark:border-[#2A3143] text-slate-400'}`}>5</div>
-                  <span className={`text-[11px] font-bold mt-1 transition-colors uppercase tracking-wider ${currentStep >= 5 ? 'text-[#1E5EFF] dark:text-blue-400' : 'text-slate-400 hidden sm:block'}`}>Selesai</span>
+                  <span className={`text-[11px] font-bold mt-1 transition-colors uppercase tracking-wider ${currentStep >= 4 ? 'text-[#1E5EFF] dark:text-blue-400' : 'text-slate-400 hidden sm:block'}`}>Selesai</span>
                 </div>
               </div>
             </div>
@@ -375,8 +411,20 @@ export default function CreateCvView() {
               <div className="flex flex-col md:flex-row gap-6 mb-6">
                 {/* Photo Upload Handler */}
                 <div className="flex flex-col items-center gap-2 shrink-0">
-                  <label className="flex flex-col items-center justify-center w-32 h-32 rounded-full border-2 border-dashed border-slate-300 dark:border-[#2A3143] bg-slate-50 dark:bg-transparent hover:bg-slate-100 dark:hover:bg-white/5 hover:border-[#1E5EFF] cursor-pointer transition-all group relative overflow-hidden">
-                    {formData.photoUrl ? (
+                  <label className={`flex flex-col items-center justify-center w-32 h-32 rounded-full border-2 border-dashed transition-all group relative overflow-hidden ${
+                    photoError 
+                      ? 'border-red-400 dark:border-red-600 bg-red-50 dark:bg-red-900/10' 
+                      : 'border-slate-300 dark:border-[#2A3143] bg-slate-50 dark:bg-transparent hover:bg-slate-100 dark:hover:bg-white/5 hover:border-[#1E5EFF] cursor-pointer'
+                  }`}>
+                    {photoUploading ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <svg className="w-8 h-8 text-blue-500 animate-spin" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span className="text-[10px] text-slate-500 font-medium">Mengunggah...</span>
+                      </div>
+                    ) : formData.photoUrl ? (
                       <img src={formData.photoUrl} alt="Preview" className="w-full h-full object-cover" />
                     ) : (
                       <>
@@ -384,10 +432,15 @@ export default function CreateCvView() {
                         <span className="text-[10px] text-slate-500 font-medium">Tambah Foto</span>
                       </>
                     )}
-                    <input type="file" accept="image/*" onChange={handlePhotoUpload} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" title="Unggah Foto" />
+                    {!photoUploading && (
+                      <input type="file" accept="image/jpeg,image/jpg,image/png,image/webp" onChange={handlePhotoUpload} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" title="Unggah Foto" disabled={photoUploading} />
+                    )}
                   </label>
-                  {formData.photoUrl && (
-                    <button onClick={() => updateField('photoUrl', '')} className="text-[10px] font-bold text-red-500 hover:underline">Hapus Foto</button>
+                  {photoError && (
+                    <div className="text-[10px] font-semibold text-red-600 dark:text-red-400 text-center max-w-[128px]">{photoError}</div>
+                  )}
+                  {formData.photoUrl && !photoUploading && (
+                    <button onClick={() => { updateField('photoUrl', ''); setPhotoError(null); }} className="text-[10px] font-bold text-red-500 hover:underline">Hapus Foto</button>
                   )}
                 </div>
                 
@@ -575,40 +628,15 @@ export default function CreateCvView() {
               </div>
               <div className="flex justify-between mt-8 pt-6 border-t border-slate-100 dark:border-[#2A3143]">
                  <button type="button" onClick={prevStep} className="bg-slate-100 dark:bg-[#1A2133] hover:bg-slate-200 dark:hover:bg-[#2A3143] text-slate-700 dark:text-slate-300 px-6 py-3 rounded-xl font-bold transition-all flex items-center gap-2 active:scale-95"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg> Sebelumnya</button>
-                 <button type="button" onClick={nextStep} className="bg-[#1E5EFF] hover:bg-blue-600 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-500/25 flex items-center gap-2 active:scale-95">Selesai dan Simpan <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg></button>
+                 <button type="button" onClick={() => handleSaveDocument('SELESAI')} disabled={isSaving} className="bg-[#5A45FF] hover:bg-[#4C3BDE] disabled:opacity-50 text-white font-bold px-8 py-3 rounded-xl transition-all shadow-[0_0_20px_rgba(90,69,255,0.4)] flex items-center justify-center gap-2 group active:scale-95">
+                   <svg className={`w-5 h-5 ${isSaving ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={isSaving ? "M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" : "M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"}></path></svg>
+                   {isSaving ? 'Memproses...' : 'Selesaikan & Lihat Hasil'}
+                 </button>
               </div>
             </div> 
             )}
 
-            {/* Section 2: Template Select & Generate */}
-            {currentStep === 5 && (
-            <div className="cv-step w-full">
-              <div className="grid grid-cols-1 gap-6">
-                
-                <LayoutSelection theme="blue" stepNumber={5} />
 
-                {/* Aksi Button */}
-                <div className="rounded-[24px] p-6 border border-slate-200 dark:border-[#2A3143] bg-transparent mt-6">
-                   <div className="flex items-center gap-4">
-                      <button type="button" onClick={prevStep} className="shrink-0 bg-slate-100 dark:bg-[#1A2133] hover:bg-slate-200 dark:hover:bg-[#2A3143] text-slate-700 dark:text-slate-300 px-6 py-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 active:scale-95 cursor-pointer" title="Kembali ke Keterampilan">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
-                      </button>
-                      <button onClick={() => handleSaveDocument('SELESAI')} disabled={isSaving} className="flex-1 bg-[#5A45FF] hover:bg-[#4C3BDE] disabled:opacity-50 text-white font-bold py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(90,69,255,0.4)] flex items-center justify-center gap-2 group">
-                        <svg className={`w-5 h-5 ${isSaving ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={isSaving ? "M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" : "M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"}></path></svg>
-                        {isSaving ? 'Memproses...' : 'Selesaikan & Lihat Hasil'}
-                      </button>
-                   </div>
-                   <button onClick={() => handleSaveDocument('DRAF')} disabled={isSaving} className="w-full mt-3 py-3 border border-slate-300 dark:border-[#2A3143] text-slate-600 dark:text-slate-400 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-white/5 transition-all text-xs">
-                     Simpan ke Draf (Lanjutkan Nanti)
-                   </button>
-                  <p className="text-center text-[9px] text-slate-500 mt-4 px-4 leading-relaxed">
-                    Dengan menekan buat, Anda setuju untuk memformat data Anda mengikuti pedoman parser ATS global melalui jagoCV Engine.
-                  </p>
-                </div>
-              
-              </div>
-            </div>
-            )}
               </div>
             )} {/* END CONTAINER: MANUAL FORMS */}
 

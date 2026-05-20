@@ -1,9 +1,11 @@
-﻿import React, { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import './index.css';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import LandingView from './views/LandingView';
 import LoginView from './views/LoginView';
 import RegisterView from './views/RegisterView';
+import ForgotPasswordView from './views/ForgotPasswordView';
+import ResetPasswordView from './views/ResetPasswordView';
 import ProfileView from './views/ProfileView';
 import PricingView from './views/PricingView';
 import DashboardView from './views/DashboardView';
@@ -37,6 +39,8 @@ export default function App() {
         <Route path="/" element={<RootRoute />} />
         <Route path="/login" element={<LoginView />} />
         <Route path="/register" element={<RegisterView />} />
+        <Route path="/forgot-password" element={<ForgotPasswordView />} />
+        <Route path="/reset-password" element={<ResetPasswordView />} />
         <Route path="/pricing" element={<PricingView />} />
         
         {/* Authenticated Routes wrapped in AppLayout */}
@@ -59,3 +63,4 @@ export default function App() {
     </BrowserRouter>
   );
 }
+

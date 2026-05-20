@@ -48,19 +48,25 @@ export const exportToPng = async (elementId: string, fileName: string = 'documen
   }
 
   try {
-    
     // Fetch Google Fonts CSS to avoid CORS errors
     const fontCSS = await getGoogleFontsCSS();
     
-    // Use html-to-image to convert element to PNG
+    // Get the actual height of the content (not limited to A4)
+    const actualHeight = element.scrollHeight;
+    const actualWidth = element.offsetWidth;
+    
+    console.log(`Exporting PNG: ${actualWidth}x${actualHeight}px`);
+    
+    // Use html-to-image to convert element to PNG with full height
     const dataUrl = await toPng(element, {
       quality: 1,
       pixelRatio: 2,
       backgroundColor: '#ffffff',
-      fontEmbedCSS: fontCSS, // Provide font CSS directly to avoid CORS
+      fontEmbedCSS: fontCSS,
+      width: actualWidth,
+      height: actualHeight,
     });
 
-    
     // Convert data URL to blob and download
     const response = await fetch(dataUrl);
     const blob = await response.blob();
@@ -79,6 +85,7 @@ export const exportToPng = async (elementId: string, fileName: string = 'documen
 
 /**
  * Exports a DOM element to a PDF using html-to-image + jsPDF.
+ * Supports multi-page documents by detecting content height and splitting into pages.
  * @param elementId The ID of the element to export.
  * @param fileName The name of the file to save.
  */
@@ -91,26 +98,67 @@ export const exportToPdf = async (elementId: string, fileName: string = 'documen
   }
 
   try {
-    
     // Fetch Google Fonts CSS to avoid CORS errors
     const fontCSS = await getGoogleFontsCSS();
     
-    // Use html-to-image to convert element to PNG
-    const dataUrl = await toPng(element, {
-      quality: 1,
-      pixelRatio: 2,
-      backgroundColor: '#ffffff',
-      fontEmbedCSS: fontCSS, // Provide font CSS directly to avoid CORS
-    });
-
+    // A4 dimensions in pixels at 96 DPI (standard web DPI)
+    const A4_WIDTH_PX = 794;  // 210mm at 96 DPI
+    const A4_HEIGHT_PX = 1123; // 297mm at 96 DPI
     
-    // Get element dimensions
-    const imgWidth = 210; // A4 width in mm
-    const imgHeight = (element.offsetHeight * imgWidth) / element.offsetWidth;
+    // Get actual content dimensions
+    const contentHeight = element.scrollHeight;
+    const contentWidth = element.offsetWidth;
     
-    // Create PDF
+    // Calculate number of pages needed
+    const pageCount = Math.ceil(contentHeight / A4_HEIGHT_PX);
+    
+    console.log(`Exporting PDF: ${contentWidth}x${contentHeight}px (${pageCount} pages)`);
+    
+    // Create PDF with A4 dimensions
     const pdf = new jsPDF('p', 'mm', 'a4');
-    pdf.addImage(dataUrl, 'PNG', 0, 0, imgWidth, imgHeight);
+    const pdfWidth = 210; // A4 width in mm
+    const pdfHeight = 297; // A4 height in mm
+    
+    // If content fits in one page, use simple export
+    if (pageCount === 1) {
+      const dataUrl = await toPng(element, {
+        quality: 1,
+        pixelRatio: 2,
+        backgroundColor: '#ffffff',
+        fontEmbedCSS: fontCSS,
+      });
+      
+      const imgHeight = (contentHeight * pdfWidth) / contentWidth;
+      pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, imgHeight);
+    } else {
+      // Multi-page export: capture full content then split
+      const dataUrl = await toPng(element, {
+        quality: 1,
+        pixelRatio: 2,
+        backgroundColor: '#ffffff',
+        fontEmbedCSS: fontCSS,
+        width: contentWidth,
+        height: contentHeight,
+      });
+      
+      // Calculate scaling factor
+      const scale = pdfWidth / (contentWidth / 3.7795275591); // Convert px to mm
+      
+      // Add each page
+      for (let i = 0; i < pageCount; i++) {
+        if (i > 0) {
+          pdf.addPage();
+        }
+        
+        // Calculate the Y offset for this page
+        const yOffset = -(i * A4_HEIGHT_PX * scale);
+        const imgHeight = (contentHeight * pdfWidth) / contentWidth;
+        
+        // Add the image with offset to show the correct page section
+        pdf.addImage(dataUrl, 'PNG', 0, yOffset, pdfWidth, imgHeight);
+      }
+    }
+    
     pdf.save(`${fileName}.pdf`);
 
   } catch (error) {

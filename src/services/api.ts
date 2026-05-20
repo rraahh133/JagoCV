@@ -74,6 +74,24 @@ class ApiService {
     return this.request<AuthResponse>('/auth/register', { method: 'POST', body: JSON.stringify(data) });
   }
 
+  forgotPassword(email: string): Promise<{ message: string }> {
+    return this.request<{ message: string }>('/auth/forgot-password', { 
+      method: 'POST', 
+      body: JSON.stringify({ email }) 
+    });
+  }
+
+  resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
+    return this.request<{ message: string }>('/auth/reset-password', { 
+      method: 'POST', 
+      body: JSON.stringify({ token, newPassword }) 
+    });
+  }
+
+  verifyResetToken(token: string): Promise<{ valid: boolean; email: string }> {
+    return this.request<{ valid: boolean; email: string }>(`/auth/verify-reset-token?token=${encodeURIComponent(token)}`);
+  }
+
   async getMe(): Promise<import('../types/user').User> {
     const cached = this.getCache<import('../types/user').User>('user');
     if (cached) return cached;
