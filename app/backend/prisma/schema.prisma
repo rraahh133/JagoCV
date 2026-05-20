@@ -12,7 +12,7 @@ model User {
   email                 String           @unique
   password              String
   name                  String
-  profileImageUrl       String?
+  profileImageUrl       String?          @db.Text
   subscriptionTier      SubscriptionTier @default(BIASA)
   subscriptionEndsAt    DateTime?
   aiCredits             Int              @default(10)
@@ -20,7 +20,7 @@ model User {
   deletedAt             DateTime?
   createdAt             DateTime         @default(now())
   updatedAt             DateTime         @updatedAt
-  bio                   String?
+  bio                   String?          @db.Text
   headline              String?
   location              String?
   passwordResetToken    String?
@@ -59,7 +59,7 @@ model Experience {
   location    String?
   startDate   DateTime
   endDate     DateTime?
-  description String?
+  description String?   @db.Text
   isCurrent   Boolean   @default(false)
   userId      String
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -72,7 +72,7 @@ model Education {
   fieldOfStudy String?
   startDate    DateTime
   endDate      DateTime?
-  description  String?
+  description  String?   @db.Text
   userId       String
   user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

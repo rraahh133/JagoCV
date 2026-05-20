@@ -1,4 +1,4 @@
-﻿import { Mail, Phone, MapPin, Globe } from 'lucide-react';
+import { Mail, Phone, MapPin, Globe } from 'lucide-react';
 import { ResumeData } from '../../types/resume.types';
 
 export const metadata = {
@@ -41,11 +41,11 @@ export default function AtsModern({ data }: Props) {
   }[lang];
 
   return (
-    <div className="bg-white flex justify-center text-black py-8 w-full h-full overflow-auto hide-scrollbar">
-      <div className="w-[210mm] min-h-[297mm] bg-white text-black px-12 py-10 shadow-2xl print:shadow-none mx-auto shrink-0 transform origin-top md:scale-100 scale-75">
+    <div className="w-full bg-white flex justify-center text-black">
+      <div className="w-[794px] min-h-[1123px] bg-white text-black px-12 py-10 box-border shrink-0">
         
         {/* HEADER SECTION */}
-        <header className="mb-6">
+        <header className="mb-6 page-break-avoid">
           <h1 className="text-4xl font-extrabold uppercase text-black mb-1">
             {p.name || '[Nama Lengkap Anda]'}
           </h1>
@@ -84,7 +84,7 @@ export default function AtsModern({ data }: Props) {
 
         {/* SUMMARY SECTION */}
         {p.summary && (
-          <section className="mb-6">
+          <section className="mb-6 page-break-avoid">
             <h3 className="text-sm font-bold uppercase text-black border-b border-black w-fit mb-2 pb-0.5">
               {t.summary}
             </h3>
@@ -102,7 +102,7 @@ export default function AtsModern({ data }: Props) {
             </h3>
             <div className="space-y-5 text-black">
               {data.experience!.map((exp, idx) => (
-                <div key={idx} className="relative">
+                <div key={idx} className="relative page-break-avoid">
                   <div className="flex justify-between items-baseline mb-0.5">
                     <h4 className="text-[11pt] font-semibold">{exp.title}</h4>
                     <span className="text-[9.5pt]">{exp.period}</span>
@@ -129,7 +129,7 @@ export default function AtsModern({ data }: Props) {
             </h3>
             <div className="space-y-5 text-black">
               {data.projects!.map((proj, idx) => (
-                <div key={idx} className="relative">
+                <div key={idx} className="relative page-break-avoid">
                   <div className="flex justify-between items-baseline mb-0.5">
                     <h4 className="text-[11pt] font-semibold">
                       {proj.name}
@@ -164,7 +164,7 @@ export default function AtsModern({ data }: Props) {
             </h3>
             <div className="space-y-4 text-black">
               {data.education!.map((edu, idx) => (
-                <div key={idx}>
+                <div key={idx} className="page-break-avoid">
                   <div className="flex justify-between items-baseline mb-0.5">
                     <h4 className="text-[11pt] font-bold">{edu.campus}</h4>
                     <span className="text-[9.5pt]">{edu.year}</span>
@@ -181,7 +181,7 @@ export default function AtsModern({ data }: Props) {
 
         {/* SKILLS SECTION */}
         {hasSkills && (
-          <section>
+          <section className="page-break-avoid">
             <h3 className="text-sm font-bold uppercase text-black border-b border-black w-fit mb-3 pb-0.5">
               {t.skills}
             </h3>

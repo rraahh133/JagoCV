@@ -62,11 +62,13 @@ const FONTS_LIST = [
 
 export default function DesignResumeView() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const id = searchParams.get('id');
   const [isSaving, setIsSaving] = useState(false);
   const [doc, setDoc] = useState<any>(null);
   const { user } = useAuth();
+
+
   const [isAiMode, setIsAiMode] = useState(false);
   const [aiStep, setAiStep] = useState(1);
   const { currentStep, nextStep, prevStep, goToStep } = useWizard(1, 4);
@@ -399,6 +401,63 @@ export default function DesignResumeView() {
     }));
   };
 
+  const [alert, setAlert] = useState<{ show: boolean; type: 'success' | 'error'; message: string }>({
+    show: false,
+    type: 'success',
+    message: ''
+  });
+
+  const handleSaveProgress = async () => {
+    try {
+      const payload = {
+        title: `${resumeData.profile.name || 'Untitled'} - ${resumeData.profile.headline || 'Untitled'}`,
+        type: 'VISUAL_RESUME',
+        content: resumeData as any,
+        status: doc?.status || 'DRAF',
+        templateId,
+        fontFamily,
+        isAiGenerated: isAiMode
+      };
+
+      let res;
+      if (id) {
+        res = await api.updateDocument(id, payload as any);
+      } else {
+        res = await api.saveDocument(payload as any);
+        if (res?.id) {
+          setSearchParams({ id: res.id });
+        }
+      }
+      if (res) {
+        setDoc(res);
+      }
+      setAlert({ show: true, type: 'success', message: 'Progress berhasil disimpan!' });
+    } catch (err: any) {
+      console.error(err);
+      setAlert({ show: true, type: 'error', message: err.message || 'Gagal menyimpan progress' });
+    }
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        handleSaveProgress();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [id, resumeData, templateId, fontFamily, isAiMode, doc]);
+
+  useEffect(() => {
+    if (alert.show) {
+      const timer = setTimeout(() => {
+        setAlert(prev => ({ ...prev, show: false }));
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [alert.show]);
+
   const handleSaveDocument = async (status: 'SELESAI' | 'DRAF' = 'SELESAI') => {
     setIsSaving(true);
     try {
@@ -500,18 +559,23 @@ export default function DesignResumeView() {
     <div className="animate-[fadeIn_0.5s_ease_forwards]">
       
       {/* Premium Switch Navigation */}
-      {id && (
-        <div className="flex justify-center mb-12 relative z-50">
-          <div className="bg-slate-200/50 dark:bg-slate-800/50 p-1 rounded-2xl flex items-center gap-1 border border-slate-300 dark:border-slate-700 shadow-xl backdrop-blur-md">
-            <div className="px-8 py-2.5 rounded-xl text-sm font-bold bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-lg border border-slate-200 dark:border-indigo-500/30 transition-all">
-              Editor Resume
-            </div>
-            <Link to={`/resume/result/${id}`} className="px-8 py-2.5 rounded-xl text-sm font-bold transition-all text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-white/50 dark:hover:bg-white/5">
-              Hasil Akhir
-            </Link>
+      <div className="flex justify-center mb-12 relative z-50">
+        <div className="bg-slate-200/50 dark:bg-slate-800/50 p-1 rounded-2xl flex items-center gap-1 border border-slate-300 dark:border-slate-700 shadow-xl backdrop-blur-md">
+          <div className="px-8 py-2.5 rounded-xl text-sm font-bold bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-lg border border-slate-200 dark:border-indigo-500/30 transition-all">
+            Editor Resume
           </div>
+          <button 
+            onClick={() => {
+              const identifier = doc?.slug || id;
+              if (identifier) navigate(`/resume/result/${identifier}`);
+              else handleSaveDocument('SELESAI');
+            }}
+            className="px-8 py-2.5 rounded-xl text-sm font-bold transition-all text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-white/50 dark:hover:bg-white/5"
+          >
+            Hasil Akhir
+          </button>
         </div>
-      )}
+      </div>
 
       <button onClick={handleBack} className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 hover:bg-slate-100 dark:hover:bg-white/5 dark:hover:text-white mb-6 transition-colors font-medium text-sm w-fit px-3 py-1.5 rounded-lg -ml-3">
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
@@ -525,10 +589,32 @@ export default function DesignResumeView() {
             <h1 className="text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white tracking-tight mb-2">Desain Resume Visual Anda</h1>
             <p className="text-slate-500 dark:text-slate-400 text-sm max-w-2xl">Buat resume PDF yang memukau dan tertata indah untuk memikat rekruter. Tampil menonjol dengan tipografi, warna, dan tata letak modern.</p>
           </div>
-          <button onClick={() => setShowImportModal(true)} className="flex items-center justify-center gap-2 px-5 py-2.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl font-medium text-sm transition-all shadow-sm shrink-0">
-            <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-            Impor Data ATS
-          </button>
+          <div className="flex items-center gap-3 shrink-0">
+            {alert.show && (
+              <div className="animate-[fadeIn_0.3s_ease_forwards]">
+                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border shadow-md backdrop-blur-md transition-all ${
+                  alert.type === 'success' 
+                    ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400' 
+                    : 'bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400'
+                }`}>
+                  {alert.type === 'success' ? (
+                    <svg className="w-4.5 h-4.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4.5 h-4.5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  )}
+                  <span className="text-xs font-bold">{alert.message}</span>
+                </div>
+              </div>
+            )}
+            <button onClick={() => setShowImportModal(true)} className="flex items-center justify-center gap-2 px-5 py-2.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl font-medium text-sm transition-all shadow-sm shrink-0">
+              <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+              Impor Data ATS
+            </button>
+          </div>
         </header>
 
         {/* Stacked Layout on mobile, Two columns on desktop */}

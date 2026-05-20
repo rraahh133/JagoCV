@@ -92,7 +92,7 @@ export default function BuildPortfolioView() {
     updateField('experiences', newExp);
   };
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const id = searchParams.get('id');
   const [isAiMode, setIsAiMode] = useState(false);
   const [aiStep, setAiStep] = useState(1);
@@ -101,6 +101,62 @@ export default function BuildPortfolioView() {
   const [selectedLayout, setSelectedLayout] = useState('BentoGelap');
   const [isSaving, setIsSaving] = useState(false);
   const [doc, setDoc] = useState<any>(null);
+
+  const [alert, setAlert] = useState<{ show: boolean; type: 'success' | 'error'; message: string }>({
+    show: false,
+    type: 'success',
+    message: ''
+  });
+
+  const handleSaveProgress = async () => {
+    try {
+      const payload = {
+        title: `${formData.fullName || 'Untitled'} - ${formData.role || 'Untitled'}`,
+        type: 'WEB_PORTFOLIO',
+        content: formData as any,
+        status: doc?.status || 'DRAF',
+        templateId: selectedLayout,
+        isAiGenerated: isAiMode
+      };
+
+      let res;
+      if (id) {
+        res = await api.updateDocument(id, payload as any);
+      } else {
+        res = await api.saveDocument(payload as any);
+        if (res?.id) {
+          setSearchParams({ id: res.id });
+        }
+      }
+      if (res) {
+        setDoc(res);
+      }
+      setAlert({ show: true, type: 'success', message: 'Progress berhasil disimpan!' });
+    } catch (err: any) {
+      console.error(err);
+      setAlert({ show: true, type: 'error', message: err.message || 'Gagal menyimpan progress' });
+    }
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        handleSaveProgress();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [id, formData, selectedLayout, isAiMode, doc]);
+
+  useEffect(() => {
+    if (alert.show) {
+      const timer = setTimeout(() => {
+        setAlert(prev => ({ ...prev, show: false }));
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [alert.show]);
 
   useEffect(() => {
     if (id) {
@@ -188,18 +244,23 @@ export default function BuildPortfolioView() {
     <div className="animate-[fadeIn_0.5s_ease_forwards]">
 
       {/* Premium Switch Navigation */}
-      {id && (
-        <div className="flex justify-center mb-12 relative z-50">
-          <div className="bg-slate-200/50 dark:bg-slate-800/50 p-1 rounded-2xl flex items-center gap-1 border border-slate-300 dark:border-slate-700 shadow-xl backdrop-blur-md">
-            <div className="px-8 py-2.5 rounded-xl text-sm font-bold bg-white dark:bg-cyan-600 text-cyan-600 dark:text-white shadow-lg border border-slate-200 dark:border-cyan-500/30 transition-all">
-              Editor Portofolio
-            </div>
-            <Link to={`/portfolio/result/${doc?.slug || id}`} className="px-8 py-2.5 rounded-xl text-sm font-bold transition-all text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-white/50 dark:hover:bg-white/5">
-              Hasil Akhir
-            </Link>
+      <div className="flex justify-center mb-12 relative z-50">
+        <div className="bg-slate-200/50 dark:bg-slate-800/50 p-1 rounded-2xl flex items-center gap-1 border border-slate-300 dark:border-slate-700 shadow-xl backdrop-blur-md">
+          <div className="px-8 py-2.5 rounded-xl text-sm font-bold bg-white dark:bg-cyan-600 text-cyan-600 dark:text-white shadow-lg border border-slate-200 dark:border-cyan-500/30 transition-all">
+            Editor Portofolio
           </div>
+          <button 
+            onClick={() => {
+              const identifier = doc?.slug || id;
+              if (identifier) navigate(`/portfolio/result/${identifier}`);
+              else handleGeneratePortfolio();
+            }}
+            className="px-8 py-2.5 rounded-xl text-sm font-bold transition-all text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-white/50 dark:hover:bg-white/5"
+          >
+            Hasil Akhir
+          </button>
         </div>
-      )}
+      </div>
 
       <Link to="/dashboard" className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 hover:bg-slate-100 dark:hover:bg-white/5 dark:hover:text-white mb-6 transition-colors font-medium text-sm w-fit">
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
@@ -213,10 +274,32 @@ export default function BuildPortfolioView() {
             <h1 className="text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white tracking-tight mb-2">Buat Web Portofolio Anda</h1>
             <p className="text-slate-500 dark:text-slate-400 text-sm max-w-2xl">Buat landing page portofolio yang indah dan responsif untuk menampilkan proyek, resume, dan media sosial Anda. Deploi langsung ke tautan singkat.</p>
           </div>
-          <button className="flex items-center justify-center gap-2 px-5 py-2.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl font-medium text-sm transition-all shadow-sm shrink-0">
-            <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
-            Impor Repositori GitHub
-          </button>
+          <div className="flex items-center gap-3 shrink-0">
+            {alert.show && (
+              <div className="animate-[fadeIn_0.3s_ease_forwards]">
+                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border shadow-md backdrop-blur-md transition-all ${
+                  alert.type === 'success' 
+                    ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400' 
+                    : 'bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400'
+                }`}>
+                  {alert.type === 'success' ? (
+                    <svg className="w-4.5 h-4.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4.5 h-4.5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  )}
+                  <span className="text-xs font-bold">{alert.message}</span>
+                </div>
+              </div>
+            )}
+            <button className="flex items-center justify-center gap-2 px-5 py-2.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl font-medium text-sm transition-all shadow-sm shrink-0">
+              <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+              Impor Repositori GitHub
+            </button>
+          </div>
         </header>
 
         {/* Stacked Layout on mobile, Two columns on desktop */}

@@ -1,4 +1,4 @@
-﻿import { Mail, MapPin, Phone, Globe } from 'lucide-react';
+import { Mail, MapPin, Phone, Globe } from 'lucide-react';
 import { ResumeData } from '../../types/resume.types';
 
 function SectionTitle({ title }: { title: string }) {
@@ -42,10 +42,10 @@ export default function AtsStandard({ data }: Props) {
   }[lang];
 
   return (
-    <div className="min-h-screen py-10 flex justify-center items-start lg:px-4 bg-neutral-200 overflow-auto">
-      <div className="w-[210mm] min-h-[297mm] bg-white shadow-xl text-black font-sans box-border overflow-hidden px-10 py-12 shrink-0 transform origin-top md:scale-100 scale-75">
+    <div className="w-full bg-white flex justify-center text-black">
+      <div className="w-[794px] min-h-[1123px] bg-white text-black font-sans box-border px-10 py-12 shrink-0">
         {/* Header Section */}
-        <header className="mb-4">
+        <header className="mb-4 page-break-avoid">
           <h1 className="text-4xl font-extrabold uppercase leading-tight text-black mb-1">
             {data.profile.name}
           </h1>
@@ -65,7 +65,7 @@ export default function AtsStandard({ data }: Props) {
 
         {/* Summary Section */}
         {data.profile.summary && (
-          <section className="mb-6">
+          <section className="mb-6 page-break-avoid">
             <SectionTitle title={t.summary} />
             <p className="italic text-justify text-[10.5pt] leading-relaxed text-black">
               {data.profile.summary}
@@ -79,7 +79,7 @@ export default function AtsStandard({ data }: Props) {
             <SectionTitle title={t.experience} />
             <div className="flex flex-col gap-4">
               {data.experience.map((exp, index) => (
-                <div key={index}>
+                <div key={index} className="page-break-avoid">
                   <div className="flex justify-between items-end mb-0.5">
                     <h3 className="font-semibold text-[11pt] text-black">
                       {exp.title}
@@ -110,7 +110,7 @@ export default function AtsStandard({ data }: Props) {
             <SectionTitle title={t.education} />
             <div className="flex flex-col gap-4">
               {data.education.map((edu, index) => (
-                <div key={index}>
+                <div key={index} className="page-break-avoid">
                   <div className="flex justify-between items-start mb-0.5">
                     <h3 className="font-bold text-[10pt] text-black">
                       {edu.campus}
@@ -127,7 +127,7 @@ export default function AtsStandard({ data }: Props) {
 
         {/* Skills Section */}
         {data.profile.skills && Object.keys(data.profile.skills).length > 0 && (
-          <section className="mb-6">
+          <section className="mb-6 page-break-avoid">
             <SectionTitle title={t.skills} />
             <div className="text-[10.5pt] text-black">
                <ul className="list-disc list-outside ml-4 space-y-1">

@@ -1,4 +1,4 @@
-﻿import { Mail, Phone, MapPin, Globe } from 'lucide-react';
+import { Mail, Phone, MapPin, Globe } from 'lucide-react';
 import { ResumeData } from '../../types/resume.types';
 
 export const metadata = {
@@ -42,12 +42,11 @@ export default function AtsProfessional({ data }: Props) {
   }[lang];
 
   return (
-    <div className="bg-white flex items-start justify-center text-black py-8 w-full h-full overflow-auto hide-scrollbar">
-      {/* Container Kertas (A4) */}
-      <div className="w-[210mm] min-h-[297mm] bg-white text-black px-12 py-12 shadow-2xl print:shadow-none mx-auto shrink-0 transform origin-top md:scale-100 scale-75">
+    <div className="w-full bg-white flex justify-center text-black">
+      <div className="w-[794px] min-h-[1123px] bg-white text-black px-12 py-12 box-border shrink-0">
         
         {/* 1. Header Section */}
-        <header className="mb-6">
+        <header className="mb-6 page-break-avoid">
           <h1 className="text-5xl font-extrabold uppercase leading-none mb-1 tracking-tight">
             {p.name || '[Nama Lengkap Anda]'}
           </h1>
@@ -85,7 +84,7 @@ export default function AtsProfessional({ data }: Props) {
 
         {/* 2. Summary Section */}
         {p.summary && (
-          <section className="mb-6">
+          <section className="mb-6 page-break-avoid">
             <h2 className="text-sm font-bold uppercase border-b border-black inline-block mb-2 pb-0.5 w-full">
               {t.summary}
             </h2>
@@ -103,7 +102,7 @@ export default function AtsProfessional({ data }: Props) {
             </h2>
             <div className="flex flex-col gap-4">
               {data.experience!.map((exp, idx) => (
-                <div key={idx}>
+                <div key={idx} className="page-break-avoid">
                   <div className="flex justify-between items-baseline mb-0.5">
                     <span className="font-semibold text-[11.5pt] tracking-tight">
                       {exp.title}
@@ -138,7 +137,7 @@ export default function AtsProfessional({ data }: Props) {
             </h2>
             <div className="flex flex-col gap-4">
               {data.projects!.map((proj, idx) => (
-                <div key={idx}>
+                <div key={idx} className="page-break-avoid">
                   <div className="flex justify-between items-baseline mb-0.5">
                     <span className="font-semibold text-[11pt] tracking-tight">
                       {proj.name}
@@ -169,7 +168,7 @@ export default function AtsProfessional({ data }: Props) {
             </h2>
             <div className="flex flex-col gap-4">
               {data.education!.map((edu, idx) => (
-                <div key={idx}>
+                <div key={idx} className="page-break-avoid">
                   <div className="flex justify-between items-baseline mb-0.5">
                     <span className="font-bold text-[10.5pt] tracking-tight">
                       {edu.campus}
@@ -189,7 +188,7 @@ export default function AtsProfessional({ data }: Props) {
 
         {/* 6. Technical Skills Section */}
         {hasSkills && (
-          <section className="mt-2">
+          <section className="mt-2 page-break-avoid">
             <h2 className="text-sm font-bold uppercase border-b border-black inline-block mb-3 pb-0.5 w-full">
               {t.skills}
             </h2>

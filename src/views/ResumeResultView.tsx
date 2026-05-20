@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../services/api';
 import { exportToPdf, exportToPng } from '../utils/export';
@@ -77,11 +77,11 @@ export default function ResumeResultView() {
             <div className="w-full flex justify-center overflow-x-auto py-2 hide-scrollbar">
               <div 
                 id="resume-document-container"
-                className="bg-white shadow-2xl relative w-[794px] min-h-[1123px] overflow-hidden rounded-xl shrink-0"
+                className="bg-white shadow-2xl relative w-[794px] rounded-xl shrink-0"
                 style={{ 
                   width: '794px', 
-                  height: '1123px', 
                   minWidth: '794px', 
+                  height: 'auto',
                   minHeight: '1123px',
                   fontFamily: doc.fontFamily || 'Inter' 
                 }}

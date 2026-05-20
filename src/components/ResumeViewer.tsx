@@ -22,6 +22,8 @@ const oldIdMap: Record<string, string> = {
   'modern-ats': 'AtsCompact',
 };
 
+import A4Paginator from './A4Paginator';
+
 export default function ResumeViewer({ templateId, data, fontFamily }: Props) {
   // Deep clone and clean experience tasks to avoid double bullet points in lists
   const cleanedData = {
@@ -55,9 +57,12 @@ export default function ResumeViewer({ templateId, data, fontFamily }: Props) {
 
   if (module && module.default) {
     const TemplateComponent = module.default;
+    const isCv = !!cvAtsTemplates[cvPath];
     return (
-      <div style={{ fontFamily: fontFamily || 'Inter, sans-serif' }} className="w-full h-full flex justify-center">
-        <TemplateComponent data={cleanedData} />
+      <div style={{ fontFamily: fontFamily || 'Inter, sans-serif' }} className="w-full">
+        <A4Paginator active={isCv}>
+          <TemplateComponent data={cleanedData} />
+        </A4Paginator>
       </div>
     );
   }

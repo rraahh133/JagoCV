@@ -119,11 +119,11 @@ export default function CvResultView() {
           <div className="w-full overflow-x-auto py-2 hide-scrollbar flex justify-center">
             <div 
               id="cv-document-container"
-              className="bg-white shadow-2xl relative w-[794px] min-h-[1123px] overflow-hidden rounded-xl shrink-0"
+              className="bg-white shadow-2xl relative w-[794px] rounded-xl shrink-0"
               style={{ 
                 width: '794px', 
-                height: '1123px', 
                 minWidth: '794px', 
+                height: 'auto',
                 minHeight: '1123px',
                 fontFamily: doc?.fontFamily || 'Inter' 
               }}

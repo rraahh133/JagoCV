@@ -51,11 +51,13 @@ export const exportToPng = async (elementId: string, fileName: string = 'documen
     // Fetch Google Fonts CSS to avoid CORS errors
     const fontCSS = await getGoogleFontsCSS();
     
-    // Get the actual height of the content (not limited to A4)
+    // A4 height in pixels at 96 DPI
+    const A4_HEIGHT_PX = 1123;
     const actualHeight = element.scrollHeight;
     const actualWidth = element.offsetWidth;
+    const pageCount = Math.ceil(actualHeight / A4_HEIGHT_PX);
     
-    console.log(`Exporting PNG: ${actualWidth}x${actualHeight}px`);
+    console.log(`Exporting PNG: ${actualWidth}x${actualHeight}px (${pageCount} pages)`);
     
     // Use html-to-image to convert element to PNG with full height
     const dataUrl = await toPng(element, {
@@ -65,23 +67,72 @@ export const exportToPng = async (elementId: string, fileName: string = 'documen
       fontEmbedCSS: fontCSS,
       width: actualWidth,
       height: actualHeight,
+      filter: (node: any) => {
+        if (node.classList && node.classList.contains('visual-page-break')) {
+          return false;
+        }
+        return true;
+      }
     });
 
-    // Convert data URL to blob and download
-    const response = await fetch(dataUrl);
-    const blob = await response.blob();
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.download = `${fileName}.png`;
-    link.href = url;
-    link.click();
-    URL.revokeObjectURL(url);
+    if (pageCount <= 1) {
+      // Convert data URL to blob and download
+      const response = await fetch(dataUrl);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.download = `${fileName}.png`;
+      link.href = url;
+      link.click();
+      URL.revokeObjectURL(url);
+    } else {
+      // Load the captured full-height image
+      const img = new Image();
+      img.src = dataUrl;
+      await new Promise((resolve) => {
+        img.onload = resolve;
+      });
+
+      // Slice the image into separate pages and trigger downloads
+      for (let i = 0; i < pageCount; i++) {
+        const canvas = document.createElement('canvas');
+        canvas.width = actualWidth * 2;        // pixelRatio = 2
+        canvas.height = A4_HEIGHT_PX * 2;      // Always full A4 height
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          // Fill entire canvas with white (so short last pages still look like full A4)
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          // Calculate how many source pixels are available for this page
+          const sourceY = i * A4_HEIGHT_PX * 2;
+          const sourceHeight = Math.min(A4_HEIGHT_PX * 2, img.height - sourceY);
+
+          if (sourceHeight > 0) {
+            ctx.drawImage(
+              img,
+              0, sourceY,                        // Source position
+              actualWidth * 2, sourceHeight,      // Source rectangle
+              0, 0,                               // Destination position
+              actualWidth * 2, sourceHeight        // Destination rectangle (same size)
+            );
+          }
+
+          const pageDataUrl = canvas.toDataURL('image/png');
+          const link = document.createElement('a');
+          link.download = `${fileName}_Halaman_${i + 1}.png`;
+          link.href = pageDataUrl;
+          link.click();
+        }
+      }
+    }
 
   } catch (error) {
     console.error('Error exporting to PNG:', error);
     alert('Failed to export PNG. Check console for details.');
   }
 };
+
 
 /**
  * Exports a DOM element to a PDF using html-to-image + jsPDF.
@@ -126,6 +177,12 @@ export const exportToPdf = async (elementId: string, fileName: string = 'documen
         pixelRatio: 2,
         backgroundColor: '#ffffff',
         fontEmbedCSS: fontCSS,
+        filter: (node: any) => {
+          if (node.classList && node.classList.contains('visual-page-break')) {
+            return false;
+          }
+          return true;
+        }
       });
       
       const imgHeight = (contentHeight * pdfWidth) / contentWidth;
@@ -139,6 +196,12 @@ export const exportToPdf = async (elementId: string, fileName: string = 'documen
         fontEmbedCSS: fontCSS,
         width: contentWidth,
         height: contentHeight,
+        filter: (node: any) => {
+          if (node.classList && node.classList.contains('visual-page-break')) {
+            return false;
+          }
+          return true;
+        }
       });
       
       // Calculate scaling factor
@@ -150,8 +213,8 @@ export const exportToPdf = async (elementId: string, fileName: string = 'documen
           pdf.addPage();
         }
         
-        // Calculate the Y offset for this page
-        const yOffset = -(i * A4_HEIGHT_PX * scale);
+        // Calculate the Y offset for this page in mm
+        const yOffset = -(i * pdfHeight);
         const imgHeight = (contentHeight * pdfWidth) / contentWidth;
         
         // Add the image with offset to show the correct page section

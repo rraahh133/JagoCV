@@ -10,7 +10,7 @@ import { mapCvToResumeData } from '../utils/mapCvToResumeData';
 
 export default function CreateCvView() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const id = searchParams.get('id');
   const { user } = useAuth();
   const [isAiMode, setIsAiMode] = useState(false);
@@ -25,9 +25,7 @@ export default function CreateCvView() {
   const [doc, setDoc] = useState<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.5);
-
-
-
+  
   useEffect(() => {
     const updateScale = () => {
       if (containerRef.current) {
@@ -190,6 +188,63 @@ export default function CreateCvView() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const [alert, setAlert] = useState<{ show: boolean; type: 'success' | 'error'; message: string }>({
+    show: false,
+    type: 'success',
+    message: ''
+  });
+
+  const handleSaveProgress = async () => {
+    try {
+      const payload = {
+        title: `${formData.fullName || 'Untitled'} - ${formData.targetRole || 'Untitled'} CV`,
+        type: 'ATS_CV',
+        content: formData as any,
+        status: doc?.status || 'DRAF',
+        templateId: selectedTemplateId,
+        fontFamily: selectedFont,
+        isAiGenerated: isAiMode
+      };
+
+      let res;
+      if (id) {
+        res = await api.updateDocument(id, payload as any);
+      } else {
+        res = await api.saveDocument(payload as any);
+        if (res?.id) {
+          setSearchParams({ id: res.id });
+        }
+      }
+      if (res) {
+        setDoc(res);
+      }
+      setAlert({ show: true, type: 'success', message: 'Progress berhasil disimpan!' });
+    } catch (err: any) {
+      console.error(err);
+      setAlert({ show: true, type: 'error', message: err.message || 'Gagal menyimpan progress' });
+    }
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        handleSaveProgress();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [id, formData, selectedTemplateId, selectedFont, isAiMode, doc]);
+
+  useEffect(() => {
+    if (alert.show) {
+      const timer = setTimeout(() => {
+        setAlert(prev => ({ ...prev, show: false }));
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [alert.show]);
+
   const handleSaveDocument = async (status: 'SELESAI' | 'DRAF' = 'SELESAI') => {
     setIsSaving(true);
     try {
@@ -264,10 +319,32 @@ export default function CreateCvView() {
             <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight mb-2">Buat CV ATS Anda</h1>
             <p className="text-slate-500 dark:text-slate-400 text-sm max-w-2xl">Isi modul di bawah atau gunakan AI untuk menyalin dari LinkedIn. Hasilkan dokumen format CV ATS<br />optimal yang dapat ditinjau dengan benar oleh sistem perusahaan top.</p>
           </div>
-          <button className="flex items-center justify-center gap-2 px-5 py-2.5 bg-[#0e76a8] hover:bg-[#0077b5] text-white rounded-xl font-semibold text-sm transition-all shadow-[0_0_15px_rgba(14,118,168,0.3)] shrink-0">
-            <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
-            Isi Otomatis Data LinkedIn
-          </button>
+          <div className="flex items-center gap-3 shrink-0">
+            {alert.show && (
+              <div className="animate-[fadeIn_0.3s_ease_forwards]">
+                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border shadow-md backdrop-blur-md transition-all ${
+                  alert.type === 'success' 
+                    ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400' 
+                    : 'bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400'
+                }`}>
+                  {alert.type === 'success' ? (
+                    <svg className="w-4.5 h-4.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4.5 h-4.5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  )}
+                  <span className="text-xs font-bold">{alert.message}</span>
+                </div>
+              </div>
+            )}
+            <button className="flex items-center justify-center gap-2 px-5 py-2.5 bg-[#0e76a8] hover:bg-[#0077b5] text-white rounded-xl font-semibold text-sm transition-all shadow-[0_0_15px_rgba(14,118,168,0.3)] shrink-0">
+              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+              Isi Otomatis Data LinkedIn
+            </button>
+          </div>
         </header>
 
         {/* Stacked Layout on mobile, Two columns on desktop */}
@@ -724,27 +801,29 @@ export default function CreateCvView() {
              </div>
              
              {/* Document Container with Auto-Fit Scaling */}
-             <div 
-               ref={containerRef}
-               className="bg-slate-900/5 dark:bg-black/20 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 flex items-center justify-center overflow-hidden min-h-[600px] relative w-full"
-             >
-               <div 
-                 style={{ 
-                   transform: `scale(${scale})`, 
-                   transformOrigin: 'center center',
-                   width: '794px',
-                   height: '1123px',
-                   flexShrink: 0
-                 }}
-                 className="bg-white dark:bg-[#0B1221] shadow-2xl rounded-sm transition-all duration-300 overflow-hidden"
-               >
-                 <ResumeViewer 
-                   templateId={selectedTemplateId} 
-                   data={mapCvToResumeData(formData, true)} 
-                   fontFamily={selectedFont} 
-                 />
-               </div>
-             </div>
+              <div 
+                ref={containerRef}
+                className="bg-slate-900/5 dark:bg-black/20 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 flex items-start justify-center overflow-y-auto min-h-[600px] max-h-[85vh] relative w-full"
+              >
+                <div 
+                  style={{ 
+                    transform: `scale(${scale})`, 
+                    transformOrigin: 'top center',
+                    width: '794px',
+                    height: 'auto',
+                    minHeight: '1123px',
+                    flexShrink: 0
+                  }}
+                  className="bg-white dark:bg-[#0B1221] shadow-2xl rounded-sm transition-all duration-300"
+                >
+                  <ResumeViewer 
+                    templateId={selectedTemplateId} 
+                    data={mapCvToResumeData(formData, true)} 
+                    fontFamily={selectedFont} 
+                  />
+                </div>
+              </div>
+
           </div>
 
         </div>

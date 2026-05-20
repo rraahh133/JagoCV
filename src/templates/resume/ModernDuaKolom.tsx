@@ -1,4 +1,4 @@
-﻿import { Globe, Mail, MapPin, Phone } from "lucide-react";
+import { Globe, Mail, MapPin, Phone } from "lucide-react";
 import { ResumeData } from '../../types/resume.types';
 
 export const metadata = {

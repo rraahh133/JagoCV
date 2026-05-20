@@ -1,4 +1,4 @@
-﻿import { Mail, Phone, MapPin, Globe } from 'lucide-react';
+import { Mail, Phone, MapPin, Globe } from 'lucide-react';
 import { ResumeData } from '../../types/resume.types';
 
 export const metadata = {
@@ -42,11 +42,11 @@ export default function AtsCompact({ data }: Props) {
   }[lang];
 
   return (
-    <div className="bg-white flex justify-center items-start text-black py-8 w-full h-full overflow-auto hide-scrollbar">
-      <div className="w-[210mm] min-h-[297mm] bg-white text-black px-12 py-10 shadow-2xl print:shadow-none mx-auto shrink-0 transform origin-top md:scale-100 scale-75">
+    <div className="w-full bg-white flex justify-center text-black">
+      <div className="w-[794px] min-h-[1123px] bg-white text-black px-12 py-10 box-border shrink-0">
         
         {/* Header Section */}
-        <header className="mb-4 text-center">
+        <header className="mb-4 text-center page-break-avoid">
           <h1 className="text-4xl font-extrabold uppercase mb-1 tracking-tight">
             {p.name || '[Nama Lengkap Anda]'}
           </h1>
@@ -86,7 +86,7 @@ export default function AtsCompact({ data }: Props) {
 
         {/* Summary Section */}
         {p.summary && (
-          <section className="mb-5">
+          <section className="mb-5 page-break-avoid">
             <h3 className="text-sm font-bold uppercase text-black border-b border-black w-full mb-2">
               {t.summary}
             </h3>
@@ -104,7 +104,7 @@ export default function AtsCompact({ data }: Props) {
             </h3>
             <div className="flex flex-col gap-4">
               {data.experience!.map((exp, idx) => (
-                <div key={idx}>
+                <div key={idx} className="page-break-avoid">
                   <div className="flex justify-between items-end mb-0.5">
                     <span className="font-semibold text-[11pt]">
                       {exp.title}
@@ -139,7 +139,7 @@ export default function AtsCompact({ data }: Props) {
             </h3>
             <div className="flex flex-col gap-4">
               {data.projects!.map((proj, idx) => (
-                <div key={idx}>
+                <div key={idx} className="page-break-avoid">
                   <div className="flex justify-between items-end mb-0.5">
                     <span className="font-semibold text-[11pt]">
                       {proj.name}
@@ -172,7 +172,7 @@ export default function AtsCompact({ data }: Props) {
             </h3>
             <div className="flex flex-col gap-3">
               {data.education!.map((edu, idx) => (
-                <div key={idx} className="flex justify-between items-start">
+                <div key={idx} className="flex justify-between items-start page-break-avoid">
                   <div>
                     <div className="font-bold text-[10.5pt]">
                       {edu.campus}
@@ -192,7 +192,7 @@ export default function AtsCompact({ data }: Props) {
 
         {/* Skills Section */}
         {hasSkills && (
-          <section>
+          <section className="page-break-avoid">
             <h3 className="text-sm font-bold uppercase text-black border-b border-black w-full mb-3">
               {t.skills}
             </h3>

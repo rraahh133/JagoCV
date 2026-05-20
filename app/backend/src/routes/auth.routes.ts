@@ -40,6 +40,7 @@ router.post('/register', async (req, res: Response) => {
     if (error.code === 'P2002') {
       return res.status(400).json({ error: 'Email sudah terdaftar' });
     }
+    console.error('Register error:', error);
     res.status(500).json({ error: 'Terjadi kesalahan pada server' });
   }
 });
@@ -58,7 +59,8 @@ router.post('/login', async (req, res: Response) => {
       expiresIn: JWT_EXPIRES_IN,
     });
     res.json({ token, user: sanitizeUser(user) });
-  } catch {
+  } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({ error: 'Terjadi kesalahan pada server' });
   }
 });
@@ -72,7 +74,8 @@ router.get('/me', authenticateToken, async (req: AuthRequest, res: Response) => 
     });
     if (!user) return res.status(404).json({ error: 'Pengguna tidak ditemukan' });
     res.json(sanitizeUser(user));
-  } catch {
+  } catch (error) {
+    console.error('Me query error:', error);
     res.status(500).json({ error: 'Gagal memverifikasi sesi' });
   }
 });
