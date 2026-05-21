@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -33,9 +33,6 @@ export default function StrukturData({ data }: { data?: PortfolioData }) {
             {data.role || 'Peran Anda'}
           </h2>
           <div className="flex gap-4 bg-white brutal-border p-3 brutal-shadow-sm">
-            <div className="h-12 w-12 rounded-full border-4 border-black bg-[#ff00f5] flex items-center justify-center -rotate-12">
-               <span className="text-2xl">{data.accentEmoji || '👨‍💻'}</span>
-            </div>
             {data.profileImageUrl && (
               <div className="h-12 w-12 rounded-full border-4 border-black bg-[#00f0ff] flex items-center justify-center rotate-6 overflow-hidden">
                  <img src={data.profileImageUrl} alt="Profile" className="w-full h-full object-cover" />

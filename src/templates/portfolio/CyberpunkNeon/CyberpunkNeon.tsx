@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -63,7 +63,7 @@ export default function PortfolioCyberpunk({ data }: { data?: PortfolioData }) {
             </div>
             
             <h1 className="text-3xl font-bold text-white mb-1 tracking-tight flex items-center gap-2">
-              {data.fullName || 'Nama Anda'} <span className="text-magenta-500">{data.accentEmoji || '🚀'}</span>
+              {data.fullName || 'Nama Anda'}
             </h1>
             <p className="text-lg neon-text-cyan font-mono mb-3">{data.role || 'Peran Anda'}</p>
             

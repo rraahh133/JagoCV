@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { CvFormData } from '../types/document';
 import { ResumeData } from '../types/resume.types';
 
@@ -33,16 +33,29 @@ export function mapCvToResumeData(cv: CvFormData, isPreview: boolean = false): R
         website: cv.portfolio || cv.linkedin || (isPreview ? placeholder('linkedin.com/in/username') : '')
       },
       skills: {
-        "Keahlian Utama": cv.skills
-          ? cv.skills.split(',').map(s => s.trim())
-          : (isPreview
-              ? [
-                  placeholder('React'),
-                  placeholder('TypeScript'),
-                  placeholder('Node.js'),
-                  placeholder('UI/UX Design')
-                ]
-              : [])
+        "Keahlian Utama": (() => {
+          // Use technicalSkills array if available
+          const techSkills = cv.technicalSkills || [];
+          
+          if (techSkills.length > 0) {
+            return techSkills;
+          }
+          
+          // Fall back to old format (comma-separated string)
+          if (cv.skills) {
+            return cv.skills.split(',').map(s => s.trim());
+          }
+          
+          // Placeholder for preview
+          return isPreview
+            ? [
+                placeholder('React'),
+                placeholder('TypeScript'),
+                placeholder('Node.js'),
+                placeholder('UI/UX Design')
+              ]
+            : [];
+        })()
       },
       languages: isPreview ? ['Indonesia (Native)', 'Inggris (Professional)'] : [],
       interests: isPreview ? ['Membaca', 'Teknologi', 'Olahraga'] : []

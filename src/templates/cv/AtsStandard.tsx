@@ -43,7 +43,7 @@ export default function AtsStandard({ data }: Props) {
 
   return (
     <div className="w-full bg-white flex justify-center text-black">
-      <div className="w-[794px] min-h-[1123px] bg-white text-black font-sans box-border px-10 py-12 shrink-0">
+      <div className="w-[794px] min-h-[1123px] bg-white text-black box-border px-10 py-12 shrink-0">
         {/* Header Section */}
         <header className="mb-4 page-break-avoid">
           <h1 className="text-4xl font-extrabold uppercase leading-tight text-black mb-1">

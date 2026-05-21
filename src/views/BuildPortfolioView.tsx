@@ -529,10 +529,6 @@ export default function BuildPortfolioView() {
                       <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Lokasi</label>
                       <input type="text" value={formData.location} onChange={e => updateField('location', e.target.value)} placeholder="Jakarta, Indonesia" className="w-full bg-white dark:bg-[#1A2133] border border-slate-300 dark:border-[#2A3143] rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-slate-200 placeholder-slate-600 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition-all" />
                     </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Emoji Aksen</label>
-                      <input type="text" value={formData.accentEmoji} onChange={e => updateField('accentEmoji', e.target.value)} placeholder="🚀" className="w-full bg-white dark:bg-[#1A2133] border border-slate-300 dark:border-[#2A3143] rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-slate-200 placeholder-slate-600 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition-all" />
-                    </div>
                   </div>
                 </div>
                 

@@ -2,35 +2,20 @@ import { toPng } from 'html-to-image';
 import { jsPDF } from 'jspdf';
 
 /**
- * Fetches Google Fonts CSS to avoid CORS issues.
- * This allows html-to-image to embed fonts properly.
+ * Waits for all fonts to be loaded before export.
+ * This ensures fonts are available when html-to-image renders the element.
  */
-async function getGoogleFontsCSS(): Promise<string> {
+async function waitForFontsToLoad(): Promise<void> {
   try {
-    // Find all Google Fonts link tags
-    const fontLinks = Array.from(document.querySelectorAll('link[href*="fonts.googleapis.com"]'));
+    // Wait for all fonts to be loaded
+    await document.fonts.ready;
     
-    if (fontLinks.length === 0) {
-      return '';
-    }
+    // Give a small additional delay to ensure fonts are fully rendered
+    await new Promise(resolve => setTimeout(resolve, 100));
     
-    // Fetch CSS from all Google Fonts links
-    const cssPromises = fontLinks.map(async (link) => {
-      const href = (link as HTMLLinkElement).href;
-      try {
-        const response = await fetch(href);
-        return await response.text();
-      } catch (e) {
-        console.warn('Could not fetch font CSS:', href);
-        return '';
-      }
-    });
-    
-    const cssArray = await Promise.all(cssPromises);
-    return cssArray.join('\n');
+    console.log('All fonts loaded successfully');
   } catch (e) {
-    console.warn('Error fetching Google Fonts CSS:', e);
-    return '';
+    console.warn('Error waiting for fonts to load:', e);
   }
 }
 
@@ -48,32 +33,36 @@ export const exportToPng = async (elementId: string, fileName: string = 'documen
   }
 
   try {
-    // Fetch Google Fonts CSS to avoid CORS errors
-    const fontCSS = await getGoogleFontsCSS();
+    // Wait for all fonts to be loaded before export
+    await waitForFontsToLoad();
     
-    // A4 height in pixels at 96 DPI
-    const A4_HEIGHT_PX = 1123;
-    const actualHeight = element.scrollHeight;
-    const actualWidth = element.offsetWidth;
-    const pageCount = Math.ceil(actualHeight / A4_HEIGHT_PX);
+    // Temporarily remove Google Fonts links to prevent CORS errors
+    const fontLinks = Array.from(document.querySelectorAll('link[href*="fonts.googleapis.com"]'));
+    fontLinks.forEach(link => link.remove());
     
-    console.log(`Exporting PNG: ${actualWidth}x${actualHeight}px (${pageCount} pages)`);
-    
-    // Use html-to-image to convert element to PNG with full height
-    const dataUrl = await toPng(element, {
-      quality: 1,
-      pixelRatio: 2,
-      backgroundColor: '#ffffff',
-      fontEmbedCSS: fontCSS,
-      width: actualWidth,
-      height: actualHeight,
-      filter: (node: any) => {
-        if (node.classList && node.classList.contains('visual-page-break')) {
-          return false;
+    try {
+      // A4 height in pixels at 96 DPI
+      const A4_HEIGHT_PX = 1123;
+      const actualHeight = element.scrollHeight;
+      const actualWidth = element.offsetWidth;
+      const pageCount = Math.ceil(actualHeight / A4_HEIGHT_PX);
+      
+      console.log(`Exporting PNG: ${actualWidth}x${actualHeight}px (${pageCount} pages)`);
+      
+      // Use html-to-image to convert element to PNG with full height
+      const dataUrl = await toPng(element, {
+        quality: 1,
+        pixelRatio: 2,
+        backgroundColor: '#ffffff',
+        width: actualWidth,
+        height: actualHeight,
+        filter: (node: any) => {
+          if (node.classList && node.classList.contains('visual-page-break')) {
+            return false;
+          }
+          return true;
         }
-        return true;
-      }
-    });
+      });
 
     if (pageCount <= 1) {
       // Convert data URL to blob and download
@@ -126,6 +115,11 @@ export const exportToPng = async (elementId: string, fileName: string = 'documen
         }
       }
     }
+    
+    } finally {
+      // Restore Google Fonts links
+      fontLinks.forEach(link => document.head.appendChild(link));
+    }
 
   } catch (error) {
     console.error('Error exporting to PNG:', error);
@@ -149,21 +143,26 @@ export const exportToPdf = async (elementId: string, fileName: string = 'documen
   }
 
   try {
-    // Fetch Google Fonts CSS to avoid CORS errors
-    const fontCSS = await getGoogleFontsCSS();
+    // Wait for all fonts to be loaded before export
+    await waitForFontsToLoad();
     
-    // A4 dimensions in pixels at 96 DPI (standard web DPI)
-    const A4_WIDTH_PX = 794;  // 210mm at 96 DPI
-    const A4_HEIGHT_PX = 1123; // 297mm at 96 DPI
+    // Temporarily remove Google Fonts links to prevent CORS errors
+    const fontLinks = Array.from(document.querySelectorAll('link[href*="fonts.googleapis.com"]'));
+    fontLinks.forEach(link => link.remove());
     
-    // Get actual content dimensions
-    const contentHeight = element.scrollHeight;
-    const contentWidth = element.offsetWidth;
-    
-    // Calculate number of pages needed
-    const pageCount = Math.ceil(contentHeight / A4_HEIGHT_PX);
-    
-    console.log(`Exporting PDF: ${contentWidth}x${contentHeight}px (${pageCount} pages)`);
+    try {
+      // A4 dimensions in pixels at 96 DPI (standard web DPI)
+      const A4_WIDTH_PX = 794;  // 210mm at 96 DPI
+      const A4_HEIGHT_PX = 1123; // 297mm at 96 DPI
+      
+      // Get actual content dimensions
+      const contentHeight = element.scrollHeight;
+      const contentWidth = element.offsetWidth;
+      
+      // Calculate number of pages needed
+      const pageCount = Math.ceil(contentHeight / A4_HEIGHT_PX);
+      
+      console.log(`Exporting PDF: ${contentWidth}x${contentHeight}px (${pageCount} pages)`);
     
     // Create PDF with A4 dimensions
     const pdf = new jsPDF('p', 'mm', 'a4');
@@ -176,7 +175,6 @@ export const exportToPdf = async (elementId: string, fileName: string = 'documen
         quality: 1,
         pixelRatio: 2,
         backgroundColor: '#ffffff',
-        fontEmbedCSS: fontCSS,
         filter: (node: any) => {
           if (node.classList && node.classList.contains('visual-page-break')) {
             return false;
@@ -193,7 +191,6 @@ export const exportToPdf = async (elementId: string, fileName: string = 'documen
         quality: 1,
         pixelRatio: 2,
         backgroundColor: '#ffffff',
-        fontEmbedCSS: fontCSS,
         width: contentWidth,
         height: contentHeight,
         filter: (node: any) => {
@@ -223,6 +220,11 @@ export const exportToPdf = async (elementId: string, fileName: string = 'documen
     }
     
     pdf.save(`${fileName}.pdf`);
+    
+    } finally {
+      // Restore Google Fonts links
+      fontLinks.forEach(link => document.head.appendChild(link));
+    }
 
   } catch (error) {
     console.error('Error exporting to PDF:', error);

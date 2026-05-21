@@ -1,4 +1,4 @@
-﻿import type { DocType } from './enums';
+import type { DocType } from './enums';
 
 // ===================================================================
 // CV (ATS) FORM DATA
@@ -16,6 +16,8 @@ export interface CvFormData {
   experiences: WorkExperience[];
   educations: Education[];
   skills: string;
+  technicalSkills?: string[];
+  softSkills?: string[];
   photoUrl?: string;
   language?: 'id' | 'en';
 }

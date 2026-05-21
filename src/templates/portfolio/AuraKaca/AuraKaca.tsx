@@ -1,4 +1,4 @@
-﻿import { Briefcase, ExternalLink, GraduationCap, MapPin } from 'lucide-react';
+import { Briefcase, ExternalLink, GraduationCap, MapPin } from 'lucide-react';
 import { motion } from 'motion/react';
 import './AuraKaca.css';
 import React from 'react';
@@ -53,7 +53,7 @@ export default function PortfolioGlassmorphism({ data }: { data?: PortfolioData 
               
               <h1 className="text-[20px] font-semibold text-white mb-1 tracking-tight">{data.fullName || 'Nama Anda'}</h1>
               <p className="text-[13px] text-[#00F0FF] uppercase tracking-[1.5px] font-medium mb-4 flex items-center gap-2">
-                {data.role || 'Peran Anda'} {data.accentEmoji || '🚀'}
+                {data.role || 'Peran Anda'}
               </p>
               
               <div className="flex items-center text-white/60 text-[13px] mt-auto uppercase tracking-[0.5px]">

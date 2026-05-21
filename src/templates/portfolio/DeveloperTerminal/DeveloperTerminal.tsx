@@ -1,4 +1,4 @@
-﻿import { Github, Linkedin, Globe, MapPin, ExternalLink, Briefcase, GraduationCap, Sparkles, ChevronRight, Link as LinkIcon } from "lucide-react";
+import { Github, Linkedin, Globe, MapPin, ExternalLink, Briefcase, GraduationCap, Sparkles, ChevronRight, Link as LinkIcon } from "lucide-react";
 import { motion } from "motion/react";
 import "./DeveloperTerminal.css";
 import { PortfolioData } from '../../../types/portfolio';
@@ -40,7 +40,7 @@ export default function PortfolioDeveloper({ data }: { data?: PortfolioData }) {
            >
              <div className="flex flex-col lg:flex-row lg:items-baseline justify-between mb-1 gap-2 lg:gap-0 text-center md:text-left">
                <h1 className="text-4xl font-light tracking-tight text-white flex flex-col sm:flex-row items-center gap-2 justify-center md:justify-start">
-                 {data.fullName || 'Nama Anda'} <span className="hidden sm:inline text-cyan-400 mx-2 font-thin">|</span> <span className="text-slate-400 text-2xl sm:text-4xl">{data.role || 'Peran Anda'} {data.accentEmoji}</span>
+                 {data.fullName || 'Nama Anda'} <span className="hidden sm:inline text-cyan-400 mx-2 font-thin">|</span> <span className="text-slate-400 text-2xl sm:text-4xl">{data.role || 'Peran Anda'}</span>
                </h1>
                <div className="text-xs font-mono text-cyan-500/80 tracking-widest uppercase flex items-center justify-center md:justify-start gap-1">
                  {data.location || 'Lokasi Anda'} <MapPin className="w-3 h-3" />

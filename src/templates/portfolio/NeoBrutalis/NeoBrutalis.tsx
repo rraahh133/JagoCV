@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -31,7 +31,7 @@ export default function PortfolioCreative({ data }: { data?: PortfolioData }) {
         <div className="space-y-3">
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white">{data.fullName || 'Nama Anda'}</h1>
           <p className="text-xl text-[#3b82f6] font-medium flex items-center justify-center gap-2">
-            {data.role || 'Peran Anda'} <span className="text-2xl">{data.accentEmoji || '🚀'}</span>
+            {data.role || 'Peran Anda'}
           </p>
           <p className="flex items-center justify-center gap-2 text-[#94a3b8] mt-2">
             <MapPin size={18} /> {data.location || 'Lokasi Anda'}

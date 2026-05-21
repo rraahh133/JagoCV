@@ -197,14 +197,20 @@ export default function ModernMinimalis({ data }: Props) {
           </div>
 
           <div className="space-y-1.5 pb-2">
-            <h3 className="text-[13px] font-bold uppercase border-l-2 border-[var(--color-accent)] pl-2">Bahasa & Hobi</h3>
-            <ul className={`text-[11px] space-y-1.5 flex flex-col mt-2 ${isLangPlaceholder && isInterestPlaceholder ? "opacity-50 italic" : ""}`}>
+            <h3 className="text-[13px] font-bold uppercase border-l-2 border-[var(--color-accent)] pl-2">Bahasa</h3>
+            <ul className={`text-[11px] space-y-1.5 flex flex-col mt-2 ${isLangPlaceholder ? "opacity-50 italic" : ""}`}>
               {languagesData.map(val => (
                 <li key={val} className="flex items-center gap-2 flex-wrap">
                   <span className="w-1 h-1 shrink-0 bg-[var(--color-primary)] rounded-full"></span>
                   <span>{val}</span>
                 </li>
               ))}
+            </ul>
+          </div>
+
+          <div className="space-y-1.5 pb-2">
+            <h3 className="text-[13px] font-bold uppercase border-l-2 border-[var(--color-accent)] pl-2">Hobi</h3>
+            <ul className={`text-[11px] space-y-1.5 flex flex-col mt-2 ${isInterestPlaceholder ? "opacity-50 italic" : ""}`}>
               {interestsData.map(val => (
                 <li key={val} className="flex items-center gap-2 flex-wrap">
                   <span className="w-1 h-1 shrink-0 bg-[var(--color-primary)] rounded-full"></span>

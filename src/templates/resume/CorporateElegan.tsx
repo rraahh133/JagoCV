@@ -150,7 +150,7 @@ export default function CorporateElegan({ data }: Props) {
               </section>
             )}
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col gap-4">
               {data.profile.languages && data.profile.languages.length > 0 && (
                 <section>
                   <h3 className="text-[var(--color-accent)] font-black uppercase text-[10px] tracking-widest mb-2">Bahasa</h3>

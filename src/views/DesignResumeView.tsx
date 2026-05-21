@@ -90,6 +90,7 @@ export default function DesignResumeView() {
   const [showExitModal, setShowExitModal] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [atsProjects, setAtsProjects] = useState<any[]>([]);
   const [initialStateStr, setInitialStateStr] = useState('');
 
   useEffect(() => {
@@ -198,6 +199,63 @@ export default function DesignResumeView() {
       }));
     }
   }, [user, id]);
+
+  // Fetch user's ATS CV drafts for import
+  useEffect(() => {
+    const fetchAtsDocuments = async () => {
+      if (!user) return;
+      try {
+        const docs = await api.getDocuments();
+        console.log('All documents:', docs);
+        const atsDocs = docs
+          .filter((doc: any) => {
+            const isAtsType = doc.type === 'CV_ATS' || doc.type === 'ATS_CV' || doc.type === 'CV';
+            console.log('Document:', doc.id, 'Type:', doc.type, 'IsATS:', isAtsType);
+            return isAtsType && doc.content;
+          })
+          .map((doc: any) => ({
+            id: doc.id,
+            title: doc.title || 'CV ATS Tanpa Judul',
+            date: new Date(doc.updatedAt || doc.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+            data: {
+              profile: {
+                name: doc.content.fullName || '',
+                headline: doc.content.targetRole || '',
+                summary: doc.content.summary || '',
+                contact: {
+                  email: doc.content.email || '',
+                  phone: doc.content.phone || '',
+                  location: doc.content.location || '',
+                  website: doc.content.linkedin || doc.content.portfolio || ''
+                },
+                skills: {
+                  Technical: doc.content.technicalSkills || doc.content.skills?.split(',').map((s: string) => s.trim()) || []
+                },
+                languages: [],
+                interests: []
+              },
+              experience: (doc.content.experiences || []).map((exp: any) => ({
+                title: exp.title || '',
+                company: exp.company || '',
+                period: exp.startDate && exp.endDate ? `${exp.startDate} - ${exp.endDate}` : exp.startDate || '',
+                tasks: exp.description ? exp.description.split('\n').filter((t: string) => t.trim()) : []
+              })),
+              education: (doc.content.educations || []).map((edu: any) => ({
+                degree: edu.degree || '',
+                campus: edu.institution || '',
+                year: edu.startYear && edu.endYear ? `${edu.startYear} - ${edu.endYear}` : edu.startYear || '',
+                gpa: edu.gpa || ''
+              })),
+              projects: []
+            }
+          }));
+        setAtsProjects(atsDocs);
+      } catch (err) {
+        console.error('Failed to fetch ATS documents:', err);
+      }
+    };
+    fetchAtsDocuments();
+  }, [user]);
 
   const handleProfileChange = (field: keyof ResumeData['profile'], value: string) => {
     setResumeData(prev => ({ ...prev, profile: { ...prev.profile, [field]: value } }));
@@ -502,55 +560,6 @@ export default function DesignResumeView() {
       setIsSaving(false);
     }
   };
-
-  const mockAtsProjects = [
-    {
-      id: "ats-1",
-      title: "CV ATS - Software Engineer",
-      date: "12 Mei 2026",
-      data: {
-        profile: {
-          name: "Budi Santoso",
-          headline: "Senior Software Engineer",
-          summary: "Seorang Software Engineer dengan lebih dari 5 tahun pengalaman dalam membangun aplikasi web skala besar.",
-          contact: { email: "budi.s@example.com", phone: "08123456789", location: "Jakarta, Indonesia", website: "github.com/budis" },
-          skills: { "Teknis": ["React", "TypeScript", "Node.js"] },
-          languages: ["Indonesia", "Inggris"],
-          interests: ["Coding", "Membaca"]
-        },
-        experience: [
-          { title: "Frontend Developer", company: "Tech Indo", period: "2021 - Sekarang", tasks: ["Membangun antarmuka modern", "Optimasi performa"] }
-        ],
-        education: [
-          { degree: "S1 Teknik Informatika", campus: "Universitas Indonesia", year: "2017 - 2021", gpa: "3.85" }
-        ],
-        projects: []
-      }
-    },
-    {
-      id: "ats-2",
-      title: "CV ATS - Product Manager",
-      date: "10 Mei 2026",
-      data: {
-        profile: {
-          name: "Siti Aminah",
-          headline: "Product Manager",
-          summary: "Berpengalaman mengelola siklus produk dari konsep hingga peluncuran.",
-          contact: { email: "siti.a@example.com", phone: "08987654321", location: "Bandung, Indonesia", website: "linkedin.com/in/sitia" },
-          skills: { "Manajemen": ["Scrum", "Agile", "Jira"] },
-          languages: ["Indonesia", "Inggris"],
-          interests: ["Menulis", "Traveling"]
-        },
-        experience: [
-          { title: "Product Owner", company: "Startup Maju", period: "2022 - 2026", tasks: ["Mengelola backlog", "Komunikasi dengan stakeholder"] }
-        ],
-        education: [
-          { degree: "S1 Sistem Informasi", campus: "Institut Teknologi Bandung", year: "2018 - 2022", gpa: "3.90" }
-        ],
-        projects: []
-      }
-    }
-  ];
 
   const handleSelectAtsImport = (project: any) => {
     setResumeData((prev) => ({
@@ -915,92 +924,6 @@ export default function DesignResumeView() {
                       </div>
                     </div>
                   </div>
-
-                  {/* Warna Perusahaan & Kampus */}
-                  <div className="space-y-3 p-3 bg-slate-50 dark:bg-slate-900/30 rounded-lg border border-slate-200 dark:border-slate-800">
-                    <h5 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide flex items-center gap-2">
-                      <svg className="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
-                      Teks Perusahaan & Kampus
-                    </h5>
-                    <label className="flex items-center gap-3 cursor-pointer group">
-                      <div className="relative flex items-center justify-center">
-                        <input type="checkbox" className="sr-only" checked={resumeData.design?.entityStyle?.isBold ?? true} onChange={(e) => handleEntityStyleChange('isBold', e.target.checked)} />
-                        <div className={`w-10 h-5.5 rounded-full transition-colors ${resumeData.design?.entityStyle?.isBold !== false ? 'bg-indigo-500' : 'bg-slate-200 dark:bg-slate-700'}`}></div>
-                        <div className={`absolute left-1 top-1 w-3.5 h-3.5 bg-white rounded-full transition-transform ${resumeData.design?.entityStyle?.isBold !== false ? 'translate-x-4.5' : 'translate-x-0'}`}></div>
-                      </div>
-                      <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Tebalkan Teks (Bold)</span>
-                    </label>
-
-                    <label className="flex items-center gap-3 cursor-pointer group">
-                      <div className="relative flex items-center justify-center">
-                        <input type="checkbox" className="sr-only" checked={resumeData.design?.entityStyle?.hasBadge ?? false} onChange={(e) => handleEntityStyleChange('hasBadge', e.target.checked)} />
-                        <div className={`w-10 h-5.5 rounded-full transition-colors ${resumeData.design?.entityStyle?.hasBadge ? 'bg-indigo-500' : 'bg-slate-200 dark:bg-slate-700'}`}></div>
-                        <div className={`absolute left-1 top-1 w-3.5 h-3.5 bg-white rounded-full transition-transform ${resumeData.design?.entityStyle?.hasBadge ? 'translate-x-4.5' : 'translate-x-0'}`}></div>
-                      </div>
-                      <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Gaya Lencana (Badge)</span>
-                    </label>
-
-                    {(resumeData.design?.entityStyle?.hasBadge) && (
-                      <div className="pl-6 border-l-2 border-indigo-500/30 flex flex-col gap-3 py-1.5 animate-[fadeIn_0.2s_ease_forwards]">
-                        <div className="flex items-center justify-between gap-3">
-                          <label className="text-xs font-semibold text-slate-600 dark:text-slate-400">Latar Lencana:</label>
-                          <div className="flex items-center gap-2">
-                            <input 
-                              type="color" 
-                              value={resumeData.design?.entityStyle?.badgeBgColor || '#E0E7FF'} 
-                              onChange={(e) => handleEntityStyleChange('badgeBgColor', e.target.value)} 
-                              className="w-8 h-8 rounded-lg cursor-pointer border-2 border-slate-300 dark:border-slate-600 bg-transparent p-0.5 [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded-md [&::-webkit-color-swatch]:border-none shadow-sm hover:scale-105 transition-transform" 
-                            />
-                            <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400 min-w-[70px]">
-                              {resumeData.design?.entityStyle?.badgeBgColor || '#E0E7FF'}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between gap-3">
-                          <label className="text-xs font-semibold text-slate-600 dark:text-slate-400">Teks Lencana:</label>
-                          <div className="flex items-center gap-2">
-                            <input 
-                              type="color" 
-                              value={resumeData.design?.entityStyle?.badgeTextColor || '#4F46E5'} 
-                              onChange={(e) => handleEntityStyleChange('badgeTextColor', e.target.value)} 
-                              className="w-8 h-8 rounded-lg cursor-pointer border-2 border-slate-300 dark:border-slate-600 bg-transparent p-0.5 [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded-md [&::-webkit-color-swatch]:border-none shadow-sm hover:scale-105 transition-transform" 
-                            />
-                            <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400 min-w-[70px]">
-                              {resumeData.design?.entityStyle?.badgeTextColor || '#4F46E5'}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between gap-3">
-                          <label className="text-xs font-semibold text-slate-600 dark:text-slate-400">Kelengkungan:</label>
-                          <select 
-                            value={resumeData.design?.entityStyle?.badgeBorderRadius || '4px'} 
-                            onChange={(e) => handleEntityStyleChange('badgeBorderRadius', e.target.value)}
-                            className="bg-white dark:bg-[#1A2133] border border-slate-300 dark:border-[#2A3143] rounded-lg px-2.5 py-1.5 text-xs text-slate-800 dark:text-slate-200 outline-none transition-all cursor-pointer hover:border-indigo-400"
-                          >
-                            <option value="0px">Siku (None)</option>
-                            <option value="4px">Bulat Tipis (Rounded)</option>
-                            <option value="8px">Medium (MD)</option>
-                            <option value="9999px">Lonjong (Full)</option>
-                          </select>
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="flex items-center justify-between gap-3 mt-1">
-                      <label className="text-xs font-semibold text-slate-600 dark:text-slate-400">Warna Teks:</label>
-                      <div className="flex items-center gap-2">
-                        <input 
-                          type="color" 
-                          value={resumeData.design?.entityStyle?.color || '#4F46E5'} 
-                          onChange={(e) => handleEntityStyleChange('color', e.target.value)} 
-                          className="w-10 h-10 rounded-lg cursor-pointer border-2 border-slate-300 dark:border-slate-600 bg-transparent p-0.5 [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded-md [&::-webkit-color-swatch]:border-none shadow-sm hover:scale-105 transition-transform" 
-                        />
-                        <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400 min-w-[70px]">
-                          {resumeData.design?.entityStyle?.color || '#4F46E5'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
                 </div>
 
                 {/* Apply Button */}
@@ -1120,8 +1043,8 @@ export default function DesignResumeView() {
                 Keterampilan & Kekuatan
               </h2>
               <div className="space-y-5">
-                <div className="space-y-3">
-                  <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Keahlian Teknis Utama</label>
+                <div className="border border-slate-200 dark:border-[#2A3143] rounded-[16px] p-5 bg-transparent space-y-3">
+                  <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Keahlian Teknis Utama</h3>
                   <div className="flex gap-2">
                     <input 
                       type="text" 
@@ -1498,114 +1421,113 @@ export default function DesignResumeView() {
                  </div>
                ))}
                
-               <div className="mt-8">
-                 <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-4">Hobi & Bahasa</h3>
-                 <div className="border border-slate-200 dark:border-[#2A3143] rounded-[16px] p-5 bg-transparent space-y-6">
-                   
-                   {/* Bahasa */}
-                   <div className="space-y-3">
-                     <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Bahasa</label>
-                     <div className="flex gap-2">
-                       <input 
-                         type="text" 
-                         value={languageInput} 
-                         onChange={e => setLanguageInput(e.target.value)} 
-                         onKeyDown={e => {
-                           if (e.key === 'Enter') {
-                             e.preventDefault();
-                             handleAddLanguage();
-                           }
-                         }}
-                         placeholder="misal: Indonesia, Inggris" 
-                         className="flex-1 bg-white dark:bg-[#1A2133] border border-slate-300 dark:border-[#2A3143] rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 placeholder-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all font-medium" 
-                       />
-                       <button 
-                         type="button" 
-                         onClick={handleAddLanguage} 
-                         className="bg-indigo-600 hover:bg-indigo-500 text-white px-5 rounded-xl text-sm font-bold transition-all shadow-md active:scale-95 flex items-center gap-1 shrink-0"
-                       >
-                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
-                         Tambah
-                       </button>
-                     </div>
-                     
-                     {/* Language Chips */}
-                     <div className="flex flex-wrap gap-2 pt-1">
-                       {(resumeData.profile.languages || []).map(lang => (
-                         <span 
-                           key={lang} 
-                           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-500/20 animate-fade-in"
-                         >
-                           {lang}
-                           <button 
-                             type="button" 
-                             onClick={() => handleRemoveLanguage(lang)} 
-                             className="hover:bg-indigo-200 dark:hover:bg-indigo-500/25 p-0.5 rounded-full transition-colors inline-flex items-center justify-center shrink-0 w-4 h-4"
-                             title="Hapus Bahasa"
-                           >
-                             <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
-                           </button>
-                         </span>
-                       ))}
-                       {(resumeData.profile.languages || []).length === 0 && (
-                         <span className="text-xs text-slate-500 italic mt-1">Belum ada bahasa yang ditambahkan.</span>
-                       )}
-                     </div>
-                   </div>
+                {/* Bahasa Section */}
+                <div className="mt-8">
+                  <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-4">Bahasa</h3>
+                  <div className="border border-slate-200 dark:border-[#2A3143] rounded-[16px] p-5 bg-transparent space-y-3">
+                    <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Bahasa yang Dikuasai</label>
+                    <div className="flex gap-2">
+                      <input 
+                        type="text" 
+                        value={languageInput} 
+                        onChange={e => setLanguageInput(e.target.value)} 
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleAddLanguage();
+                          }
+                        }}
+                        placeholder="misal: Indonesia, Inggris" 
+                        className="flex-1 bg-white dark:bg-[#1A2133] border border-slate-300 dark:border-[#2A3143] rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 placeholder-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all font-medium" 
+                      />
+                      <button 
+                        type="button" 
+                        onClick={handleAddLanguage} 
+                        className="bg-indigo-600 hover:bg-indigo-500 text-white px-5 rounded-xl text-sm font-bold transition-all shadow-md active:scale-95 flex items-center gap-1 shrink-0"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
+                        Tambah
+                      </button>
+                    </div>
+                    
+                    {/* Language Chips */}
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {(resumeData.profile.languages || []).map(lang => (
+                        <span 
+                          key={lang} 
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-500/20 animate-fade-in"
+                        >
+                          {lang}
+                          <button 
+                            type="button" 
+                            onClick={() => handleRemoveLanguage(lang)} 
+                            className="hover:bg-indigo-200 dark:hover:bg-indigo-500/25 p-0.5 rounded-full transition-colors inline-flex items-center justify-center shrink-0 w-4 h-4"
+                            title="Hapus Bahasa"
+                          >
+                            <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+                          </button>
+                        </span>
+                      ))}
+                      {(resumeData.profile.languages || []).length === 0 && (
+                        <span className="text-xs text-slate-500 italic mt-1">Belum ada bahasa yang ditambahkan.</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
 
-                   {/* Hobi / Ketertarikan */}
-                   <div className="space-y-3 pt-5 border-t border-slate-200 dark:border-[#2A3143]">
-                     <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Hobi / Ketertarikan</label>
-                     <div className="flex gap-2">
-                       <input 
-                         type="text" 
-                         value={interestInput} 
-                         onChange={e => setInterestInput(e.target.value)} 
-                         onKeyDown={e => {
-                           if (e.key === 'Enter') {
-                             e.preventDefault();
-                             handleAddInterest();
-                           }
-                         }}
-                         placeholder="misal: Fotografi, Coding" 
-                         className="flex-1 bg-white dark:bg-[#1A2133] border border-slate-300 dark:border-[#2A3143] rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 placeholder-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all font-medium" 
-                       />
-                       <button 
-                         type="button" 
-                         onClick={handleAddInterest} 
-                         className="bg-indigo-600 hover:bg-indigo-500 text-white px-5 rounded-xl text-sm font-bold transition-all shadow-md active:scale-95 flex items-center gap-1 shrink-0"
-                       >
-                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
-                         Tambah
-                       </button>
-                     </div>
-                     
-                     {/* Interest Chips */}
-                     <div className="flex flex-wrap gap-2 pt-1">
-                       {(resumeData.profile.interests || []).map(hobby => (
-                         <span 
-                           key={hobby} 
-                           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-500/20 animate-fade-in"
-                         >
-                           {hobby}
-                           <button 
-                             type="button" 
-                             onClick={() => handleRemoveInterest(hobby)} 
-                             className="hover:bg-indigo-200 dark:hover:bg-indigo-500/25 p-0.5 rounded-full transition-colors inline-flex items-center justify-center shrink-0 w-4 h-4"
-                             title="Hapus Hobi"
-                           >
-                             <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
-                           </button>
-                         </span>
-                       ))}
-                       {(resumeData.profile.interests || []).length === 0 && (
-                         <span className="text-xs text-slate-500 italic mt-1">Belum ada hobi yang ditambahkan.</span>
-                       )}
-                     </div>
-                   </div>
-
-                 </div>
-               </div>
+                {/* Hobi Section */}
+                <div className="mt-6">
+                  <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-4">Hobi / Ketertarikan</h3>
+                  <div className="border border-slate-200 dark:border-[#2A3143] rounded-[16px] p-5 bg-transparent space-y-3">
+                    <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Hobi & Minat</label>
+                    <div className="flex gap-2">
+                      <input 
+                        type="text" 
+                        value={interestInput} 
+                        onChange={e => setInterestInput(e.target.value)} 
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleAddInterest();
+                          }
+                        }}
+                        placeholder="misal: Fotografi, Coding" 
+                        className="flex-1 bg-white dark:bg-[#1A2133] border border-slate-300 dark:border-[#2A3143] rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 placeholder-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all font-medium" 
+                      />
+                      <button 
+                        type="button" 
+                        onClick={handleAddInterest} 
+                        className="bg-indigo-600 hover:bg-indigo-500 text-white px-5 rounded-xl text-sm font-bold transition-all shadow-md active:scale-95 flex items-center gap-1 shrink-0"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
+                        Tambah
+                      </button>
+                    </div>
+                    
+                    {/* Interest Chips */}
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {(resumeData.profile.interests || []).map(hobby => (
+                        <span 
+                          key={hobby} 
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-500/20 animate-fade-in"
+                        >
+                          {hobby}
+                          <button 
+                            type="button" 
+                            onClick={() => handleRemoveInterest(hobby)} 
+                            className="hover:bg-indigo-200 dark:hover:bg-indigo-500/25 p-0.5 rounded-full transition-colors inline-flex items-center justify-center shrink-0 w-4 h-4"
+                            title="Hapus Hobi"
+                          >
+                            <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+                          </button>
+                        </span>
+                      ))}
+                      {(resumeData.profile.interests || []).length === 0 && (
+                        <span className="text-xs text-slate-500 italic mt-1">Belum ada hobi yang ditambahkan.</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
                
                 {/* Aksi Button */}
                 <div className="rounded-[24px] p-6 border border-slate-200 dark:border-[#2A3143] bg-transparent mt-8">
@@ -1838,7 +1760,7 @@ export default function DesignResumeView() {
               </p>
               
               <div className="flex flex-col gap-3 max-h-[60vh] overflow-y-auto hide-scrollbar">
-                {mockAtsProjects.map((project) => (
+                {atsProjects.map((project) => (
                   <button 
                     key={project.id}
                     onClick={() => handleSelectAtsImport(project)}

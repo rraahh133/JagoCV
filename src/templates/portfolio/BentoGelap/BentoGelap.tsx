@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -51,9 +51,6 @@ export default function PortfolioBento({ data }: { data?: PortfolioData }) {
                   alt={data.fullName || "Profile"}
                   className="w-full h-full object-cover"
                 />
-              </div>
-              <div className="absolute bottom-1 right-1 bg-electric-blue p-2 rounded-full border-4 border-indigo-card text-xl">
-                <span className="block">{data.accentEmoji || '🚀'}</span>
               </div>
             </div>
             <div className="text-right">

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -42,7 +42,7 @@ export default function PortfolioMinimalist({ data }: { data?: PortfolioData }) 
             </div>
             <div className="text-left md:text-right">
               <p className="text-[11px] text-gray-500 uppercase tracking-widest flex items-center md:justify-end gap-1">
-                {data.location || 'Stockholm, SE'} <span className="text-xs">{data.accentEmoji || '🚀'}</span>
+                {data.location || 'Stockholm, SE'}
               </p>
             </div>
           </div>

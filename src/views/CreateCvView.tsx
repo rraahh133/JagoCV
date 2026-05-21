@@ -26,6 +26,7 @@ export default function CreateCvView() {
   const [doc, setDoc] = useState<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.5);
+  const [techSkillInput, setTechSkillInput] = useState("");
   
   useEffect(() => {
     const updateScale = () => {
@@ -63,6 +64,7 @@ export default function CreateCvView() {
     experiences: [createEmptyExperience()],
     educations: [createEmptyEducation()],
     skills: '',
+    technicalSkills: [],
   });
 
   useEffect(() => {
@@ -181,6 +183,22 @@ export default function CreateCvView() {
 
   const updateField = (field: keyof CvFormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleAddTechSkill = () => {
+    if (techSkillInput.trim()) {
+      const trimmed = techSkillInput.trim();
+      const currentSkills = formData.technicalSkills || [];
+      if (!currentSkills.includes(trimmed)) {
+        updateField('technicalSkills', [...currentSkills, trimmed]);
+      }
+      setTechSkillInput("");
+    }
+  };
+
+  const handleRemoveTechSkill = (skillToRemove: string) => {
+    const currentSkills = formData.technicalSkills || [];
+    updateField('technicalSkills', currentSkills.filter(s => s !== skillToRemove));
   };
 
   const [alert, setAlert] = useState<{ show: boolean; type: 'success' | 'error'; message: string }>({
@@ -552,7 +570,7 @@ export default function CreateCvView() {
                 </div>
                 <div className="space-y-1.5 md:col-span-2">
                   <label className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Lokasi (Kota, Negara)</label>
-                  <input type="text" value={formData.location} onChange={e => updateField('location', e.target.value)} placeholder="Jakarta, Indonesia" className="w-full bg-white dark:bg-[#1A2133] border border-slate-300 dark:border-[#2A3143] rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-slate-200 placeholder-slate-600 focus:border-[#1E5EFF] focus:ring-1 focus:ring-[#1E5EFF] outline-none transition-all" />
+                  <textarea rows={2} value={formData.location} onChange={e => updateField('location', e.target.value)} placeholder="Jakarta, Indonesia" className="w-full bg-white dark:bg-[#1A2133] border border-slate-300 dark:border-[#2A3143] rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-slate-200 placeholder-slate-600 focus:border-[#1E5EFF] focus:ring-1 focus:ring-[#1E5EFF] outline-none transition-all resize-none"></textarea>
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">LinkedIn URL</label>
@@ -604,11 +622,11 @@ export default function CreateCvView() {
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Bulan / Tahun Mulai</label>
-                        <input type="month" value={exp.startDate} onChange={e => { const updated = [...formData.experiences]; updated[idx].startDate = e.target.value; updateField('experiences', updated); }} className="w-full bg-white dark:bg-[#1A2133] border border-slate-300 dark:border-[#2A3143] rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:border-[#1E5EFF] focus:ring-1 focus:ring-[#1E5EFF] outline-none transition-all" />
+                        <input type="month" value={exp.startDate} onChange={e => { const updated = [...formData.experiences]; updated[idx].startDate = e.target.value; updateField('experiences', updated); }} onClick={(e) => e.currentTarget.showPicker?.()} className="w-full bg-white dark:bg-[#1A2133] border border-slate-300 dark:border-[#2A3143] rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:border-[#1E5EFF] focus:ring-1 focus:ring-[#1E5EFF] outline-none transition-all cursor-pointer" />
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Bulan / Tahun Selesai</label>
-                        <input type="month" value={exp.endDate} onChange={e => { const updated = [...formData.experiences]; updated[idx].endDate = e.target.value; updateField('experiences', updated); }} disabled={exp.isCurrent} className="w-full bg-white dark:bg-[#1A2133] border border-slate-300 dark:border-[#2A3143] rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:border-[#1E5EFF] focus:ring-1 focus:ring-[#1E5EFF] outline-none transition-all disabled:opacity-50" />
+                        <input type="month" value={exp.endDate} onChange={e => { const updated = [...formData.experiences]; updated[idx].endDate = e.target.value; updateField('experiences', updated); }} onClick={(e) => !exp.isCurrent && e.currentTarget.showPicker?.()} min={exp.startDate} disabled={exp.isCurrent} className="w-full bg-white dark:bg-[#1A2133] border border-slate-300 dark:border-[#2A3143] rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:border-[#1E5EFF] focus:ring-1 focus:ring-[#1E5EFF] outline-none transition-all disabled:opacity-50 cursor-pointer" />
                       </div>
                    </div>
                    <div className="flex items-center gap-2 mb-4">
@@ -694,9 +712,57 @@ export default function CreateCvView() {
                 <span className="w-6 h-6 rounded-md bg-blue-100 dark:bg-[#1E5EFF]/20 flex items-center justify-center text-blue-600 dark:text-[#88A4E6] text-xs">4</span>
                 Keterampilan
               </h2>
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Keterampilan Relevan (Pisahkan dengan koma)</label>
-                <textarea rows={3} value={formData.skills} onChange={e => updateField('skills', e.target.value)} placeholder="React, TypeScript, Node.js, Project Management, Agile..." className="w-full bg-white dark:bg-[#1A2133] border border-slate-300 dark:border-[#2A3143] rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-slate-200 placeholder-slate-600 focus:border-[#1E5EFF] focus:ring-1 focus:ring-[#1E5EFF] outline-none transition-all resize-none"></textarea>
+              <div className="space-y-5">
+                {/* Technical Skills */}
+                <div className="space-y-3">
+                  <label className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Keahlian Teknis Utama</label>
+                  <div className="flex gap-2">
+                    <input 
+                      type="text" 
+                      value={techSkillInput} 
+                      onChange={e => setTechSkillInput(e.target.value)} 
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddTechSkill();
+                        }
+                      }}
+                      placeholder="Masukkan keahlian (misal: React, TypeScript, Figma) lalu tekan Enter" 
+                      className="flex-1 bg-white dark:bg-[#1A2133] border border-slate-300 dark:border-[#2A3143] rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-slate-200 placeholder-slate-500 focus:border-[#1E5EFF] focus:ring-1 focus:ring-[#1E5EFF] outline-none transition-all" 
+                    />
+                    <button 
+                      type="button" 
+                      onClick={handleAddTechSkill} 
+                      className="bg-[#1E5EFF] hover:bg-blue-600 text-white px-5 rounded-xl text-sm font-bold transition-all shadow-md active:scale-95 flex items-center gap-1 shrink-0"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
+                      Tambah
+                    </button>
+                  </div>
+                  
+                  {/* Technical Skill Chips */}
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {(formData.technicalSkills || []).map(skill => (
+                      <span 
+                        key={skill} 
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-500/20 animate-fade-in"
+                      >
+                        {skill}
+                        <button 
+                          type="button" 
+                          onClick={() => handleRemoveTechSkill(skill)} 
+                          className="hover:bg-blue-200 dark:hover:bg-blue-500/25 p-0.5 rounded-full transition-colors inline-flex items-center justify-center shrink-0 w-4 h-4"
+                          title="Hapus Keahlian"
+                        >
+                          <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                      </span>
+                    ))}
+                    {(formData.technicalSkills || []).length === 0 && (
+                      <span className="text-xs text-slate-500 italic mt-1">Belum ada keahlian teknis yang ditambahkan.</span>
+                    )}
+                  </div>
+                </div>
               </div>
               <div className="flex justify-between mt-8 pt-6 border-t border-slate-100 dark:border-[#2A3143]">
                  <button type="button" onClick={prevStep} className="bg-slate-100 dark:bg-[#1A2133] hover:bg-slate-200 dark:hover:bg-[#2A3143] text-slate-700 dark:text-slate-300 px-6 py-3 rounded-xl font-bold transition-all flex items-center gap-2 active:scale-95"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg> Sebelumnya</button>
