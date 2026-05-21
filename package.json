@@ -7,6 +7,8 @@
     "replace": "node run_replace.cjs",
     "dev": "vite --port=3000 --host=0.0.0.0",
     "build": "vite build",
+    "build:backend": "cd app/backend && npm run build",
+    "build:all": "npm run build && npm run build:backend",
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit"
