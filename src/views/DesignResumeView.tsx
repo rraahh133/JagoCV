@@ -1051,8 +1051,8 @@ export default function DesignResumeView() {
                 </div>
               </div>
             </div>
-            {/* Personal Info & Photo */}
-            {currentStep === 1 && (
+            {/* Personal Info & Photo — hanya tampil jika layout panel tertutup */}
+            {!showLayoutSelection && currentStep === 1 && (
             <div className="resume-step block rounded-[24px] p-6 md:p-8 border border-slate-200 dark:border-[#2A3143] bg-transparent">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-5 flex items-center gap-2">
                 <span className="w-6 h-6 rounded-md bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-xs">1</span>

@@ -23,5 +23,5 @@
     "allowImportingTsExtensions": true,
     "noEmit": true
   },
-  "exclude": ["node_modules", "app/backend/**", "dist"]
+  "exclude": ["node_modules", "app/backend/**", "dist", "**/*.tmp", "**/*ts-node-dev*"]
 }

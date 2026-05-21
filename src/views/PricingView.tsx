@@ -1,7 +1,21 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { TOKEN_KEY } from '../config';
 
 export default function PricingView() {
+  const navigate = useNavigate();
+
+  const handleUpgrade = (plan: 'go' | 'ultra') => {
+    // Arahkan ke halaman register jika belum login, atau tampilkan info
+    // Untuk saat ini arahkan ke register/dashboard sebagai placeholder payment flow
+    const token = localStorage.getItem(TOKEN_KEY);
+    if (token) {
+      // User sudah login — tampilkan notifikasi (payment gateway belum terintegrasi)
+      alert(`Fitur pembayaran untuk paket ${plan === 'go' ? 'Go' : 'Ultra'} sedang dalam pengembangan. Silakan hubungi tim kami untuk informasi lebih lanjut.`);
+    } else {
+      navigate('/register');
+    }
+  };
   return (
     <div className="animate-[fadeIn_0.5s_ease_forwards]">
       <div className="max-w-6xl mx-auto mt-6">
@@ -95,7 +109,7 @@ export default function PricingView() {
                   <span className="text-sm text-slate-200">Unduh PDF Kualitas Tinggi tanpa Watermark</span>
                 </li>
               </ul>
-              <button className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold hover:shadow-lg hover:shadow-blue-500/30 transition-all mt-auto transform hover:-translate-y-0.5">Pilih Go</button>
+              <button className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold hover:shadow-lg hover:shadow-blue-500/30 transition-all mt-auto transform hover:-translate-y-0.5" onClick={() => handleUpgrade('go')}>Pilih Go</button>
             </div>
             </div>
 
@@ -131,7 +145,7 @@ export default function PricingView() {
                   <span className="text-sm text-slate-200">Custom Subdomain (opsi link personalisasi)</span>
                 </li>
               </ul>
-              <button className="relative z-10 w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-bold hover:shadow-lg hover:shadow-amber-500/40 transition-all mt-auto transform hover:-translate-y-0.5 border-none">Pilih Ultra</button>
+              <button className="relative z-10 w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-bold hover:shadow-lg hover:shadow-amber-500/40 transition-all mt-auto transform hover:-translate-y-0.5 border-none" onClick={() => handleUpgrade('ultra')}>Pilih Ultra</button>
             </div>
             
           </div>

@@ -1,51 +1,94 @@
 # JagoCV Backend
 
-Backend untuk JagoCV menggunakan Node.js, Express, dan MySQL (Prisma ORM).
+Express API server untuk JagoCV — Node.js + TypeScript + MySQL (Prisma ORM).
 
-## Setup Cepat
-
-### 1. Install Laragon
-Download dan install **Laragon** dari [https://laragon.org](https://laragon.org)
-
-### 2. Start MySQL
-Buka Laragon dan klik **Start All**
-
-### 3. Install Dependencies
-```bash
-cd app/backend
-npm install
-```
-
-### 4. Setup Database
-```bash
-npx prisma migrate dev --name init
-```
-
-> **Note:** Jangan lupa setup file `.env` dengan `DATABASE_URL` dan variabel lainnya (JWT_SECRET, GEMINI_API_KEY)
-
-### 5. Run Server
-```bash
-npm run dev
-```
-
-Server akan berjalan di `http://localhost:5000`
+> **Setup lengkap ada di [README utama](../../README.md)** di root folder proyek.
 
 ---
 
-## Konfigurasi .env
+## Quickstart (jika sudah setup sebelumnya)
 
-```env
-DATABASE_URL="mysql://root@localhost:3306/jagocv"
-JWT_SECRET="your_secret_key"
-GEMINI_API_KEY="your_gemini_api_key"
-PORT=5000
+```bash
+# Install dependencies
+npm install
+
+# Setup database (buat DB + sync schema + generate Prisma Client)
+npm run db:setup
+
+# Jalankan server development
+npm run dev
 ```
 
-## Troubleshooting
+Server berjalan di `http://localhost:5000`
 
-**Error: Can't connect to MySQL**
-- Pastikan Laragon sudah running
+---
 
-**Error: Access denied**
-- Cek username/password di `DATABASE_URL`
-- Default Laragon: `root` tanpa password
+## Scripts
+
+| Perintah | Fungsi |
+|---|---|
+| `npm run dev` | Jalankan server development (auto-restart) |
+| `npm run build` | Compile TypeScript ke JavaScript |
+| `npm start` | Jalankan server production (butuh `build` dulu) |
+| `npm run db:setup` | Buat database + sync schema + generate Prisma Client |
+| `npm run db:reset` | **Reset** database (hapus semua data) + setup ulang |
+| `npm run prisma:generate` | Generate ulang Prisma Client saja |
+| `npm run prisma:migrate` | Buat migration baru (untuk perubahan schema) |
+
+---
+
+## Struktur Folder
+
+```
+app/backend/
+├── prisma/
+│   ├── schema.prisma          # Definisi model database
+│   ├── migrations/            # History migration
+│   └── jagocv_phpmyadmin.sql  # SQL manual untuk phpMyAdmin
+├── src/
+│   ├── index.ts               # Entry point server
+│   ├── config.ts              # Environment variables
+│   ├── lib/
+│   │   ├── prisma.ts          # Prisma client instance
+│   │   └── ai.ts              # Gemini AI client
+│   ├── middleware/
+│   │   ├── auth.ts            # JWT authentication
+│   │   └── logger.ts          # HTTP request logger
+│   ├── routes/                # API route handlers
+│   └── utils/                 # Helper functions
+├── .env                       # ← TIDAK di-commit ke Git
+├── .env.example               # Template env (di-commit)
+└── package.json
+```
+
+---
+
+## API Endpoints
+
+| Method | Endpoint | Auth | Keterangan |
+|---|---|---|---|
+| POST | `/api/auth/register` | — | Daftar akun baru |
+| POST | `/api/auth/login` | — | Login, dapat JWT token |
+| GET | `/api/auth/me` | ✅ | Data user yang sedang login |
+| PUT | `/api/auth/profile` | ✅ | Update profil user |
+| POST | `/api/auth/forgot-password` | — | Kirim email reset password |
+| POST | `/api/auth/reset-password` | — | Reset password dengan token |
+| GET | `/api/documents` | ✅ | List semua dokumen user |
+| POST | `/api/documents` | ✅ | Buat dokumen baru |
+| GET | `/api/documents/:id` | — | Detail dokumen (public) |
+| PUT | `/api/documents/:id` | ✅ | Update dokumen |
+| DELETE | `/api/documents/:id` | ✅ | Hapus dokumen |
+| GET/POST | `/api/chat` | ✅ | Chat dengan AI |
+| GET/POST | `/api/experience` | ✅ | CRUD pengalaman kerja |
+| GET/POST | `/api/education` | ✅ | CRUD pendidikan |
+| GET | `/api/ai-usage` | ✅ | Log penggunaan AI |
+
+> ✅ = Butuh header `Authorization: Bearer <token>`
+
+---
+
+## Catatan Penting
+
+> ⚠️ **Jangan jalankan `prisma db pull`** — perintah itu akan menimpa `schema.prisma`
+> dengan nama tabel lowercase dari MySQL dan merusak seluruh kode backend.
+> Gunakan `npm run db:setup` untuk sync schema ke database.

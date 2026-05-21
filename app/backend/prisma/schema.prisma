@@ -34,6 +34,7 @@ model User {
   socialLinks           UserSocial[]
 
   @@index([email])
+  @@map("user")
 }
 
 model UserSocial {
@@ -42,6 +43,8 @@ model UserSocial {
   url      String
   userId   String
   user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("usersocial")
 }
 
 model UserPhone {
@@ -50,6 +53,8 @@ model UserPhone {
   label  String @default("Utama")
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("userphone")
 }
 
 model Experience {
@@ -63,6 +68,8 @@ model Experience {
   isCurrent   Boolean   @default(false)
   userId      String
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("experience")
 }
 
 model Education {
@@ -75,6 +82,8 @@ model Education {
   description  String?   @db.Text
   userId       String
   user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("education")
 }
 
 model Document {
@@ -99,12 +108,13 @@ model Document {
 
   @@index([userId])
   @@index([userId, deletedAt])
+  @@map("document")
 }
 
 model ChatMessage {
   id         String    @id @default(uuid())
   role       ChatRole
-  content    String
+  content    String    @db.Text
   userId     String
   documentId String?
   createdAt  DateTime  @default(now())
@@ -113,6 +123,7 @@ model ChatMessage {
 
   @@index([userId])
   @@index([documentId])
+  @@map("chatmessage")
 }
 
 model AiUsageLog {
@@ -128,6 +139,7 @@ model AiUsageLog {
 
   @@index([userId])
   @@index([createdAt])
+  @@map("aiusagelog")
 }
 
 model Template {
@@ -139,6 +151,8 @@ model Template {
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @updatedAt
   documents  Document[]
+
+  @@map("template")
 }
 
 enum UserRole {

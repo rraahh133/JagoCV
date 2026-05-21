@@ -242,7 +242,15 @@ export default function BuildPortfolioView() {
         isAiGenerated: isAiMode
       };
 
-      const res = await api.saveDocument(payload as any);
+      let res;
+      if (id) {
+        // Update dokumen yang sudah ada
+        res = await api.updateDocument(id, payload as any);
+      } else {
+        // Buat dokumen baru
+        res = await api.saveDocument(payload as any);
+      }
+
       if (res?.id) {
         navigate(`/portfolio/result/${res.slug || res.id}`);
       } else {

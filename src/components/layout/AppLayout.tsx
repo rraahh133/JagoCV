@@ -15,16 +15,15 @@ export default function AppLayout() {
     }
   }, [isAuthenticated, isLoading, navigate]);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#0B1221]">
-        <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
   return (
     <div className="flex-col w-full flex-1 bg-slate-50 dark:bg-[#0B1221] min-h-screen">
+      {/* Loading overlay — tidak unmount Outlet agar state wizard tidak reset */}
+      {isLoading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-50 dark:bg-[#0B1221]">
+          <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      )}
+
       <Navbar 
         userName={user?.name}
         userRole={user?.subscriptionTier}

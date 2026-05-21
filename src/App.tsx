@@ -16,6 +16,7 @@ import CvResultView from './views/CvResultView';
 import ResumeResultView from './views/ResumeResultView';
 import PortfolioResultView from './views/PortfolioResultView';
 import AppLayout from './components/layout/AppLayout';
+import AboutView from './views/AboutView';
 
 import EditProfileView from './views/EditProfileView';
 import SettingsView from './views/SettingsView';
@@ -42,6 +43,7 @@ export default function App() {
         <Route path="/forgot-password" element={<ForgotPasswordView />} />
         <Route path="/reset-password" element={<ResetPasswordView />} />
         <Route path="/pricing" element={<PricingView />} />
+        <Route path="/about" element={<AboutView />} />
         
         {/* Authenticated Routes wrapped in AppLayout */}
         <Route element={<AppLayout />}>
@@ -51,10 +53,13 @@ export default function App() {
           <Route path="/settings" element={<SettingsView />} />
           <Route path="/help" element={<HelpView />} />
           <Route path="/cv/build" element={<CreateCvView />} />
+          <Route path="/cv/result" element={<Navigate to="/dashboard" replace />} />
           <Route path="/cv/result/:idOrSlug" element={<CvResultView />} />
           <Route path="/resume/design" element={<DesignResumeView />} />
+          <Route path="/resume/result" element={<Navigate to="/dashboard" replace />} />
           <Route path="/resume/result/:idOrSlug" element={<ResumeResultView />} />
           <Route path="/portfolio/build" element={<BuildPortfolioView />} />
+          <Route path="/portfolio/result" element={<Navigate to="/dashboard" replace />} />
           <Route path="/portfolio/result/:idOrSlug" element={<PortfolioResultView />} />
         </Route>
 

@@ -56,7 +56,7 @@ export default function DashboardView() {
   const getEditLink = (doc: RecentDocument) => {
     switch (doc.type) {
       case 'ATS_CV': return `/cv/build?id=${doc.id}`;
-      case 'VISUAL_RESUME': return `/resume/build?id=${doc.id}`;
+      case 'VISUAL_RESUME': return `/resume/design?id=${doc.id}`;
       case 'WEB_PORTFOLIO': return `/portfolio/build?id=${doc.id}`;
       default: return '/dashboard';
     }
