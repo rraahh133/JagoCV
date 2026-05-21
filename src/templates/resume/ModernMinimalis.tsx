@@ -133,7 +133,14 @@ export default function ModernMinimalis({ data }: Props) {
               />
             </div>
             <div className="space-y-1 text-center">
-              <h1 className="text-3xl font-extrabold uppercase tracking-tight leading-none">
+              <h1 className={`font-extrabold tracking-tight leading-none ${
+                !data.profile.name ? 'text-2xl' :
+                data.profile.name.length <= 15 ? 'text-3xl' :
+                data.profile.name.length <= 20 ? 'text-2xl' :
+                data.profile.name.length <= 25 ? 'text-xl' :
+                data.profile.name.length <= 30 ? 'text-lg' :
+                'text-base'
+              }`}>
                 {data.profile.name || <span className="opacity-50 italic text-2xl font-bold">[Nama Anda]</span>}
               </h1>
               <h2 className="text-[11px] font-semibold text-[var(--color-accent)] uppercase tracking-widest mt-1.5">

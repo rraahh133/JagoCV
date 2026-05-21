@@ -87,7 +87,14 @@ export default function CorporateElegan({ data }: Props) {
               />
             </div>
 
-            <h1 className="text-4xl font-black leading-none mb-3 uppercase tracking-tighter">
+            <h1 className={`font-black leading-none mb-3 tracking-tighter ${
+              !data.profile.name ? 'text-3xl' :
+              data.profile.name.length <= 15 ? 'text-4xl' :
+              data.profile.name.length <= 20 ? 'text-3xl' :
+              data.profile.name.length <= 25 ? 'text-2xl' :
+              data.profile.name.length <= 30 ? 'text-xl' :
+              'text-lg'
+            }`}>
               {data.profile.name.split(' ').map((part, i) => (
                 <React.Fragment key={i}>
                   {part}
