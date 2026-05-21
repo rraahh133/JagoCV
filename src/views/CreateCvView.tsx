@@ -270,7 +270,7 @@ export default function CreateCvView() {
       }
     } catch (err: any) {
       console.error(err);
-      alert(err.message || 'Gagal menyimpan CV');
+      window.alert(err.message || 'Gagal menyimpan CV');
     } finally {
       setIsSaving(false);
     }

@@ -37,7 +37,7 @@ export default function BuildPortfolioView() {
     try {
       // Batas: 5MB. Jika lebih kecil dari 500KB langsung pakai, jika lebih → auto compress
       if (file.size > 5 * 1024 * 1024) {
-        setAlert({ show: true, type: 'error', message: 'File terlalu besar. Maksimal 5MB.' });
+        setNotification({ show: true, type: 'error', message: 'File terlalu besar. Maksimal 5MB.' });
         e.target.value = '';
         return;
       }
@@ -50,12 +50,12 @@ export default function BuildPortfolioView() {
 
       if (result.wasCompressed) {
         const saved = Math.round(result.originalSizeKB - result.compressedSizeKB);
-        setAlert({ show: true, type: 'success', message: `Gambar dikompresi (hemat ${saved}KB)` });
+        setNotification({ show: true, type: 'success', message: `Gambar dikompresi (hemat ${saved}KB)` });
       }
 
       updateField(field, result.dataUrl);
     } catch {
-      setAlert({ show: true, type: 'error', message: 'Gagal memproses gambar. Coba lagi.' });
+      setNotification({ show: true, type: 'error', message: 'Gagal memproses gambar. Coba lagi.' });
       e.target.value = '';
     }
   };
@@ -608,7 +608,7 @@ export default function BuildPortfolioView() {
                                      const result = await compressImage(file, { maxWidth: 800, maxHeight: 600, targetSizeKB: 300 });
                                      handleProjectUpdate(index, 'imageUrl', result.dataUrl);
                                    } catch {
-                                     setAlert({ show: true, type: 'error', message: 'Gagal memproses gambar proyek.' });
+                                     setNotification({ show: true, type: 'error', message: 'Gagal memproses gambar proyek.' });
                                    }
                                  }} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" title="Unggah Gambar Proyek" />
                               </div>
