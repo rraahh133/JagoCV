@@ -6,6 +6,7 @@ import ResumeViewer from '../components/ResumeViewer';
 import { ResumeData } from '../types/resume.types';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../services/api';
+import { compressImage } from '../utils/imageCompressor';
 
 const emptyResumeData: ResumeData = {
   profile: {
@@ -232,14 +233,18 @@ export default function DesignResumeView() {
     setResumeData(prev => ({ ...prev, profile: { ...prev.profile, contact: { ...prev.profile.contact, [field]: value } } }));
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        handleProfileChange('image', reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+    try {
+      const result = await compressImage(file, {
+        maxWidth: 400,
+        maxHeight: 400,
+        targetSizeKB: 200,
+      });
+      handleProfileChange('image', result.dataUrl);
+    } catch {
+      console.error('Gagal memproses foto profil resume');
     }
   };
 
@@ -1466,12 +1471,14 @@ export default function DesignResumeView() {
                     {/* Add thumbnail */}
                     <div className="flex items-center gap-4">
                        <label className="w-16 h-16 rounded-xl border-2 border-dashed border-slate-300 dark:border-[#2A3143] flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 dark:hover:bg-[#1A2133] hover:border-indigo-400 dark:hover:border-indigo-500 transition-all relative overflow-hidden shrink-0 group/img">
-                          <input type="file" accept="image/*" onChange={(e) => {
+                          <input type="file" accept="image/*" onChange={async (e) => {
                             const file = e.target.files?.[0];
-                            if (file) {
-                              const reader = new FileReader();
-                              reader.onloadend = () => handleUpdateProject(idx, 'image', reader.result as string);
-                              reader.readAsDataURL(file);
+                            if (!file) return;
+                            try {
+                              const result = await compressImage(file, { maxWidth: 600, maxHeight: 400, targetSizeKB: 200 });
+                              handleUpdateProject(idx, 'image', result.dataUrl);
+                            } catch {
+                              console.error('Gagal memproses gambar proyek');
                             }
                           }} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" title="Unggah Gambar" />
                           {proj.image ? (

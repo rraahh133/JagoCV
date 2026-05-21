@@ -1,18 +1,56 @@
 import React from 'react';
 import { cn } from '../../utils/cn';
+import { compressImage, CompressOptions } from '../../utils/imageCompressor';
 
 interface FileUploadProps {
   variant?: 'avatar' | 'banner';
   label?: string;
   accept?: string;
+  /** Callback dipanggil dengan data URL hasil kompresi */
+  onImageReady?: (dataUrl: string) => void;
+  /** Callback raw onChange (digunakan jika tidak pakai onImageReady) */
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   previewUrl?: string;
   className?: string;
+  /** Opsi kompresi. Jika tidak diisi, pakai default sesuai variant */
+  compressOptions?: CompressOptions;
 }
 
-export default function FileUpload({ variant = 'avatar', label, accept = 'image/*', onChange, previewUrl, className }: FileUploadProps) {
+export default function FileUpload({
+  variant = 'avatar',
+  label,
+  accept = 'image/*',
+  onImageReady,
+  onChange,
+  previewUrl,
+  className,
+  compressOptions,
+}: FileUploadProps) {
   const isAvatar = variant === 'avatar';
   const defaultLabel = isAvatar ? 'Foto Profil' : 'Gambar Banner (Opsional)';
+
+  // Default compress options per variant
+  const defaultCompressOptions: CompressOptions = isAvatar
+    ? { maxWidth: 400, maxHeight: 400, targetSizeKB: 200 }
+    : { maxWidth: 1920, maxHeight: 600, targetSizeKB: 400 };
+
+  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Jika ada onImageReady, gunakan auto-compress pipeline
+    if (onImageReady) {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      try {
+        const result = await compressImage(file, compressOptions ?? defaultCompressOptions);
+        onImageReady(result.dataUrl);
+      } catch (err) {
+        console.error('FileUpload: gagal kompresi gambar', err);
+      }
+      return;
+    }
+
+    // Fallback ke onChange biasa
+    onChange?.(e);
+  };
 
   return (
     <label className={cn(
@@ -20,7 +58,13 @@ export default function FileUpload({ variant = 'avatar', label, accept = 'image/
       isAvatar ? 'w-32 h-32 rounded-full shrink-0' : 'w-full h-32 rounded-2xl',
       className
     )}>
-      <input type="file" accept={accept} onChange={onChange} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" title={label || defaultLabel} />
+      <input
+        type="file"
+        accept={accept}
+        onChange={handleChange}
+        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+        title={label || defaultLabel}
+      />
       {previewUrl ? (
         <img src={previewUrl} alt="Preview" className={cn('w-full h-full object-cover', isAvatar && 'rounded-full')} />
       ) : (

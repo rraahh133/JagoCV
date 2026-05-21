@@ -6,6 +6,7 @@ import PortfolioViewer from '../components/PortfolioViewer';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../services/api';
 import { PortfolioData, defaultPortfolioData, createEmptyPortfolioLink, createEmptyPortfolioProject, createEmptyPortfolioExperience } from '../types/portfolio';
+import { compressImage } from '../utils/imageCompressor';
 
 export default function BuildPortfolioView() {
   const { user } = useAuth();
@@ -29,18 +30,33 @@ export default function BuildPortfolioView() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, field: 'profileImageUrl' | 'bannerImageUrl') => {
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'profileImageUrl' | 'bannerImageUrl') => {
     const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 1024 * 1024 * 2) {
-        alert("File terlalu besar. Maksimal 2MB.");
+    if (!file) return;
+
+    try {
+      // Batas: 5MB. Jika lebih kecil dari 500KB langsung pakai, jika lebih → auto compress
+      if (file.size > 5 * 1024 * 1024) {
+        setAlert({ show: true, type: 'error', message: 'File terlalu besar. Maksimal 5MB.' });
+        e.target.value = '';
         return;
       }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        updateField(field, reader.result as string);
-      };
-      reader.readAsDataURL(file);
+
+      const result = await compressImage(file, {
+        maxWidth: field === 'bannerImageUrl' ? 1920 : 800,
+        maxHeight: field === 'bannerImageUrl' ? 600 : 800,
+        targetSizeKB: field === 'bannerImageUrl' ? 400 : 200,
+      });
+
+      if (result.wasCompressed) {
+        const saved = Math.round(result.originalSizeKB - result.compressedSizeKB);
+        setAlert({ show: true, type: 'success', message: `Gambar dikompresi (hemat ${saved}KB)` });
+      }
+
+      updateField(field, result.dataUrl);
+    } catch {
+      setAlert({ show: true, type: 'error', message: 'Gagal memproses gambar. Coba lagi.' });
+      e.target.value = '';
     }
   };
 
@@ -585,12 +601,14 @@ export default function BuildPortfolioView() {
                                  ) : (
                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                                  )}
-                                 <input type="file" accept="image/*" onChange={(e) => {
+                                 <input type="file" accept="image/*" onChange={async (e) => {
                                    const file = e.target.files?.[0];
-                                   if (file) {
-                                     const reader = new FileReader();
-                                     reader.onloadend = () => handleProjectUpdate(index, 'imageUrl', reader.result as string);
-                                     reader.readAsDataURL(file);
+                                   if (!file) return;
+                                   try {
+                                     const result = await compressImage(file, { maxWidth: 800, maxHeight: 600, targetSizeKB: 300 });
+                                     handleProjectUpdate(index, 'imageUrl', result.dataUrl);
+                                   } catch {
+                                     setAlert({ show: true, type: 'error', message: 'Gagal memproses gambar proyek.' });
                                    }
                                  }} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" title="Unggah Gambar Proyek" />
                               </div>

@@ -1,6 +1,7 @@
 ﻿import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
+import { compressImage } from '../utils/imageCompressor';
 
 export default function EditProfileView() {
   const navigate = useNavigate();
@@ -70,18 +71,28 @@ export default function EditProfileView() {
     setPhones(updated);
   };
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 1024 * 1024 * 2) { // 2MB Limit
-        alert("File terlalu besar. Maksimal 2MB.");
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileImageUrl(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    // Hard limit 5MB
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File terlalu besar. Maksimal 5MB.');
+      e.target.value = '';
+      return;
+    }
+
+    try {
+      // Auto compress jika > 300KB, resize ke max 400x400 untuk foto profil
+      const result = await compressImage(file, {
+        maxWidth: 400,
+        maxHeight: 400,
+        targetSizeKB: 300,
+      });
+      setProfileImageUrl(result.dataUrl);
+    } catch {
+      alert('Gagal memproses gambar. Silakan coba lagi.');
+      e.target.value = '';
     }
   };
 

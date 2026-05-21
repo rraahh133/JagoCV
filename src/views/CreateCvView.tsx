@@ -7,6 +7,7 @@ import { api } from '../services/api';
 import { CvFormData, createEmptyExperience, createEmptyEducation } from '../types/document';
 import ResumeViewer from '../components/ResumeViewer';
 import { mapCvToResumeData } from '../utils/mapCvToResumeData';
+import { compressImage } from '../utils/imageCompressor';
 
 export default function CreateCvView() {
   const navigate = useNavigate();
@@ -132,7 +133,7 @@ export default function CreateCvView() {
   const [photoUploading, setPhotoUploading] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -143,45 +144,39 @@ export default function CreateCvView() {
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
     if (!validTypes.includes(file.type)) {
       setPhotoError('Format file tidak didukung. Gunakan JPG, PNG, atau WebP.');
-      e.target.value = ''; // Reset input
+      e.target.value = '';
       return;
     }
 
-    // Validate file size (2MB max)
-    const maxSize = 2 * 1024 * 1024; // 2MB in bytes
-    if (file.size > maxSize) {
-      setPhotoError(`File terlalu besar (${(file.size / 1024 / 1024).toFixed(2)}MB). Maksimal 2MB.`);
-      e.target.value = ''; // Reset input
+    // Hard limit 5MB
+    if (file.size > 5 * 1024 * 1024) {
+      setPhotoError('File terlalu besar. Maksimal 5MB.');
+      e.target.value = '';
       return;
     }
 
-    // Start upload
     setPhotoUploading(true);
-    const reader = new FileReader();
-    
-    reader.onloadend = () => {
-      try {
-        const result = reader.result as string;
-        // Validate base64 result
-        if (!result || !result.startsWith('data:image')) {
-          throw new Error('Format gambar tidak valid');
-        }
-        updateField('photoUrl', result);
-        setPhotoUploading(false);
-        setPhotoError(null);
-      } catch (err) {
-        setPhotoError('Gagal memproses gambar. Silakan coba lagi.');
-        setPhotoUploading(false);
+    try {
+      // Auto compress jika > 300KB
+      const result = await compressImage(file, {
+        maxWidth: 400,
+        maxHeight: 400,
+        targetSizeKB: 300,
+      });
+
+      const dataUrl = result.dataUrl;
+      if (!dataUrl || !dataUrl.startsWith('data:image')) {
+        throw new Error('Format gambar tidak valid');
       }
-    };
 
-    reader.onerror = () => {
-      setPhotoError('Gagal membaca file. Silakan coba lagi.');
+      updateField('photoUrl', dataUrl);
+      setPhotoError(null);
+    } catch (err) {
+      setPhotoError('Gagal memproses gambar. Silakan coba lagi.');
+      e.target.value = '';
+    } finally {
       setPhotoUploading(false);
-      e.target.value = ''; // Reset input
-    };
-
-    reader.readAsDataURL(file);
+    }
   };
 
   const updateField = (field: keyof CvFormData, value: any) => {
