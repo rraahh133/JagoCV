@@ -1,6 +1,7 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function RegisterView() {
   const navigate = useNavigate();
@@ -9,6 +10,8 @@ export default function RegisterView() {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -130,7 +133,24 @@ export default function RegisterView() {
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Password</label>
-                  <input required value={password} onChange={(e) => setPassword(e.target.value)} type="password" className="w-full bg-white dark:bg-[#0B1221] border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 sm:py-3.5 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all shadow-sm" placeholder="Minimal 8 karakter" />
+                  <div className="relative">
+                    <input 
+                      required 
+                      value={password} 
+                      onChange={(e) => setPassword(e.target.value)} 
+                      type={showPassword ? "text" : "password"} 
+                      className="w-full bg-white dark:bg-[#0B1221] border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 sm:py-3.5 pr-12 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all shadow-sm" 
+                      placeholder="Minimal 8 karakter" 
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors p-1"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
                 </div>
                 
                 <div className="pt-2">
@@ -141,7 +161,7 @@ export default function RegisterView() {
                 </div>
                 
                 <p className="text-xs text-center text-slate-500 mt-4 leading-relaxed">
-                  Dengan mendaftar, Anda menyetujui <a href="#" className="underline hover:text-slate-800 dark:hover:text-slate-300 transition-colors">Syarat & Ketentuan</a>.
+                  Dengan mendaftar, Anda menyetujui <button type="button" onClick={() => setShowTermsModal(true)} className="underline hover:text-slate-800 dark:hover:text-slate-300 transition-colors font-medium">Syarat & Ketentuan</button>.
                 </p>
               </form>
 
@@ -152,6 +172,100 @@ export default function RegisterView() {
           </div>
         </div>
       </div>
+
+      {/* Terms & Conditions Modal */}
+      {showTermsModal && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-[fadeIn_0.2s_ease_out]"
+          onClick={() => setShowTermsModal(false)}
+        >
+          <div 
+            className="bg-white dark:bg-[#0B1221] rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col border border-slate-200 dark:border-slate-800 animate-[slideUp_0.3s_ease_out]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between p-5 sm:p-6 border-b border-slate-200 dark:border-slate-800 shrink-0">
+              <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">Syarat & Ketentuan</h2>
+              <button
+                onClick={() => setShowTermsModal(false)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
+                aria-label="Close"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+
+            {/* Content - Scrollable */}
+            <div className="flex-1 overflow-y-auto p-5 sm:p-6 text-slate-700 dark:text-slate-300">
+              <div className="space-y-5 text-sm leading-relaxed">
+                <p className="text-xs text-slate-500 dark:text-slate-400">Terakhir diperbarui: 21 Mei 2026</p>
+                
+                <section className="space-y-2">
+                  <h3 className="font-bold text-base text-slate-900 dark:text-white">1. Penerimaan Syarat</h3>
+                  <p>Dengan mengakses dan menggunakan layanan jagoCV, Anda menyetujui untuk terikat oleh syarat dan ketentuan ini. Jika Anda tidak setuju dengan syarat ini, mohon untuk tidak menggunakan layanan kami.</p>
+                </section>
+
+                <section className="space-y-2">
+                  <h3 className="font-bold text-base text-slate-900 dark:text-white">2. Penggunaan Layanan</h3>
+                  <p>Layanan jagoCV menyediakan platform untuk membuat CV, resume, dan portofolio profesional. Anda bertanggung jawab atas:</p>
+                  <ul className="list-disc list-inside ml-4 mt-2 space-y-1">
+                    <li>Keakuratan informasi yang Anda berikan</li>
+                    <li>Keamanan akun dan kata sandi Anda</li>
+                    <li>Semua aktivitas yang terjadi di bawah akun Anda</li>
+                  </ul>
+                </section>
+
+                <section className="space-y-2">
+                  <h3 className="font-bold text-base text-slate-900 dark:text-white">3. Privasi Data</h3>
+                  <p>Kami menghormati privasi Anda dan berkomitmen untuk melindungi data pribadi Anda. Data yang Anda berikan akan digunakan untuk:</p>
+                  <ul className="list-disc list-inside ml-4 mt-2 space-y-1">
+                    <li>Menyediakan dan meningkatkan layanan kami</li>
+                    <li>Berkomunikasi dengan Anda tentang layanan</li>
+                    <li>Memproses permintaan dan transaksi Anda</li>
+                  </ul>
+                </section>
+
+                <section className="space-y-2">
+                  <h3 className="font-bold text-base text-slate-900 dark:text-white">4. Hak Kekayaan Intelektual</h3>
+                  <p>Konten yang Anda buat menggunakan jagoCV tetap menjadi milik Anda. Namun, template, desain, dan teknologi yang kami sediakan adalah milik jagoCV dan dilindungi oleh hak cipta.</p>
+                </section>
+
+                <section className="space-y-2">
+                  <h3 className="font-bold text-base text-slate-900 dark:text-white">5. Pembatasan Tanggung Jawab</h3>
+                  <p>jagoCV tidak bertanggung jawab atas:</p>
+                  <ul className="list-disc list-inside ml-4 mt-2 space-y-1">
+                    <li>Kerugian yang timbul dari penggunaan layanan</li>
+                    <li>Gangguan atau kesalahan teknis</li>
+                    <li>Kehilangan data atau konten</li>
+                  </ul>
+                </section>
+
+                <section className="space-y-2">
+                  <h3 className="font-bold text-base text-slate-900 dark:text-white">6. Perubahan Syarat</h3>
+                  <p>Kami berhak untuk mengubah syarat dan ketentuan ini sewaktu-waktu. Perubahan akan berlaku segera setelah dipublikasikan di platform kami.</p>
+                </section>
+
+                <section className="space-y-2">
+                  <h3 className="font-bold text-base text-slate-900 dark:text-white">7. Kontak</h3>
+                  <p>Jika Anda memiliki pertanyaan tentang syarat dan ketentuan ini, silakan hubungi kami melalui email atau formulir kontak yang tersedia di platform.</p>
+                </section>
+              </div>
+            </div>
+
+            {/* Footer - Fixed at bottom */}
+            <div className="flex items-center justify-end gap-3 p-5 sm:p-6 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 shrink-0">
+              <button
+                onClick={() => setShowTermsModal(false)}
+                className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold transition-all text-sm shadow-lg hover:shadow-xl active:scale-95"
+              >
+                Saya Mengerti
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
